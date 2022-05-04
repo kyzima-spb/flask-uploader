@@ -1,5 +1,6 @@
 from __future__ import annotations
 from abc import ABCMeta, abstractmethod
+from glob import iglob
 import os
 import typing as t
 
@@ -7,7 +8,7 @@ from flask import current_app
 from werkzeug.datastructures import FileStorage
 # from werkzeug.utils import secure_filename
 
-from .utils import get_extension, md5stream, split_pairs
+from .utils import get_extension, increment_path, md5stream, split_pairs
 
 
 __all__ = (
@@ -109,7 +110,7 @@ class AbstractStorage(metaclass=ABCMeta):
         """Reads and returns a ``File`` object for an identifier."""
 
     @abstractmethod
-    def save(self, storage: FileStorage) -> str:
+    def save(self, storage: FileStorage, overwrite: bool = False) -> str:
         """Saves the uploaded file and returns an identifier for searching."""
 
 
@@ -145,10 +146,13 @@ class FileSystemStorage(AbstractStorage):
     def load(self, lookup: str) -> File:
         return File(os.path.join(self.get_root_dir(), lookup))
 
-    def save(self, storage: FileStorage) -> str:
+    def save(self, storage: FileStorage, overwrite: bool = False) -> str:
         root_dir = self.get_root_dir()
         lookup = self.filename_strategy(storage)
         path = os.path.join(root_dir, lookup)
+
+        if not overwrite and os.path.exists(path):
+            path = increment_path('%s_%%d%s' % os.path.splitext(path))
 
         os.makedirs(os.path.dirname(path), exist_ok=True)
         storage.save(path)

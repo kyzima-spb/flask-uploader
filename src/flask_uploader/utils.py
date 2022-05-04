@@ -4,7 +4,13 @@ import os
 import typing as t
 
 
-__all__ = ('get_extension', 'md5file', 'md5stream', 'split_pairs')
+__all__ = (
+    'get_extension',
+    'increment_path',
+    'md5file',
+    'md5stream',
+    'split_pairs',
+)
 
 
 def get_extension(filename: str) -> str:
@@ -17,6 +23,36 @@ def get_extension(filename: str) -> str:
     return ext
 
 
+def increment_path(path_pattern: str) -> str:
+    """
+    Finds the next free path in an sequentially named list of files.
+    Author of this solution `James`_.
+
+    Runs in log(n) time where n is the number of existing files in sequence.
+
+    Arguments:
+        path_pattern (str):
+            e.g. 'file-%s.txt'
+
+    .. _`James`: https://stackoverflow.com/a/47087513/10509709
+    """
+    i = 1
+
+    # First do an exponential search
+    while os.path.exists(path_pattern % i):
+        i = i * 2
+
+    # Result lies somewhere in the interval (i/2..i]
+    # We call this interval (a..b] and narrow it down until a + 1 = b
+    a, b = (i // 2, i)
+
+    while a + 1 < b:
+        c = (a + b) // 2 # interval midpoint
+        a, b = (c, b) if os.path.exists(path_pattern % c) else (a, c)
+
+    return path_pattern % b
+
+
 def md5file(filename: str) -> str:
     """Returns the hash sum of the contents of the given file."""
     with open(filename, 'rb') as f:
@@ -27,11 +63,12 @@ def md5stream(stream: t.BinaryIO, buffer_size: int = 16384) -> str:
     """
     Returns the hash sum of a binary data stream.
 
-    stream (bytes):
-        Binary data stream.
-    buffer_size (int):
-        The buffer size is the number of bytes held in memory during the hash process.
-        Default to 16Kb.
+    Arguments:
+        stream (bytes):
+            Binary data stream.
+        buffer_size (int):
+            The buffer size is the number of bytes held in memory during the hash process.
+            Default to 16Kb.
     """
     hash_md5 = hashlib.md5()
 
