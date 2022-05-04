@@ -153,6 +153,7 @@ class FileSystemStorage(AbstractStorage):
 
         if not overwrite and os.path.exists(path):
             path = increment_path('%s_%%d%s' % os.path.splitext(path))
+            lookup = os.path.relpath(path, root_dir)
 
         os.makedirs(os.path.dirname(path), exist_ok=True)
         storage.save(path)

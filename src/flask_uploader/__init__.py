@@ -137,9 +137,9 @@ class Uploader(metaclass=UploaderMeta):
         """Reads and returns a ``File`` object for an identifier."""
         return self.storage.load(lookup)
 
-    def save(self, storage: FileStorage) -> str:
+    def save(self, storage: FileStorage, overwrite: bool = False) -> str:
         """Saves the uploaded file and returns an identifier for searching."""
-        return self.storage.save(storage)
+        return self.storage.save(storage, overwrite=overwrite)
 
 
 class DownloadView(MethodView):
