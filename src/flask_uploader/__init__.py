@@ -147,6 +147,10 @@ class Uploader(metaclass=UploaderMeta):
         """Reads and returns a ``File`` object for an identifier."""
         return self.storage.load(lookup)
 
+    def remove(self, lookup: str) -> None:
+        """Deletes a file from storage by unique identifier."""
+        self.storage.remove(lookup)
+
     def save(self, storage: FileStorage, overwrite: bool = False) -> str:
         """Saves the uploaded file and returns an identifier for searching."""
         for validator in self.validators:

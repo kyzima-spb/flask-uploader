@@ -110,6 +110,10 @@ class AbstractStorage(metaclass=ABCMeta):
         """Reads and returns a ``File`` object for an identifier."""
 
     @abstractmethod
+    def remove(self, lookup: str) -> None:
+        """Deletes a file from storage by unique identifier."""
+
+    @abstractmethod
     def save(self, storage: FileStorage, overwrite: bool = False) -> str:
         """Saves the uploaded file and returns an identifier for searching."""
 
@@ -139,12 +143,20 @@ class FileSystemStorage(AbstractStorage):
             raise RuntimeError('Relative path for uploading files is not allowed.')
 
         if not os.access(root_dir, os.W_OK):
-            raise RuntimeError(f'Not enough permissions to write to the directory {root_dir!r}')
+            raise RuntimeError(f'Not enough permissions to write to the directory {root_dir!r}.')
 
         return root_dir
 
     def load(self, lookup: str) -> File:
         return File(os.path.join(self.get_root_dir(), lookup))
+
+    def remove(self, lookup: str) -> None:
+        path = os.path.join(self.get_root_dir(), lookup)
+
+        if not os.access(path, os.W_OK):
+            raise RuntimeError(f'Not enough permissions to delete the file {lookup!r}.')
+
+        os.remove(path)
 
     def save(self, storage: FileStorage, overwrite: bool = False) -> str:
         root_dir = self.get_root_dir()
