@@ -15,6 +15,7 @@ from flask.typing import ResponseReturnValue
 from werkzeug.datastructures import FileStorage
 
 from .storages import AbstractStorage, File
+from .validators import TValidator
 from .utils import md5stream, split_pairs
 
 
@@ -43,6 +44,7 @@ class UploaderMeta(type):
         cls,
         name: str,
         storage: AbstractStorage,
+        validators: t.Optional[t.Sequence[TValidator]] = None,
         endpoint: t.Optional[str] = None,
         use_auto_route: bool = True,
     ) -> Uploader:
@@ -55,6 +57,7 @@ class UploaderMeta(type):
         obj: Uploader = super().__call__( # without obj lost reference
             name,
             storage,
+            validators=validators,
             endpoint=endpoint,
             use_auto_route=use_auto_route,
         )
@@ -76,6 +79,7 @@ class Uploader(metaclass=UploaderMeta):
         '__weakref__',
         'name',
         'storage',
+        'validators',
         '_endpoint',
         'use_auto_route',
     )
@@ -84,6 +88,7 @@ class Uploader(metaclass=UploaderMeta):
         self,
         name: str,
         storage: AbstractStorage,
+        validators: t.Optional[t.Sequence[TValidator]] = None,
         endpoint: t.Optional[str] = None,
         use_auto_route: bool = True
     ) -> None:
@@ -91,11 +96,16 @@ class Uploader(metaclass=UploaderMeta):
         Arguments:
             name (str): The unique name of the uploader.
             storage (AbstractStorage): Storage instance for file manipulation.
+            validators (TValidator): List of called objects for validating the uploaded file.
             endpoint (str): The name of the endpoint to generate the URL.
             use_auto_route (bool): Allows downloading a file at the default URL.
         """
+        if validators is None:
+            validators = []
+
         self.name = name
         self.storage = storage
+        self.validators = validators
         self._endpoint = endpoint
         self.use_auto_route = use_auto_route
 
@@ -139,6 +149,8 @@ class Uploader(metaclass=UploaderMeta):
 
     def save(self, storage: FileStorage, overwrite: bool = False) -> str:
         """Saves the uploaded file and returns an identifier for searching."""
+        for validator in self.validators:
+            validator(storage)
         return self.storage.save(storage, overwrite=overwrite)
 
 
