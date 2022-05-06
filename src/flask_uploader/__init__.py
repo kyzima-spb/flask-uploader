@@ -181,7 +181,7 @@ class DownloadView(MethodView):
 def init_uploader(app: Flask) -> None:
     app.config.setdefault('UPLOADER_ROOT_DIR', '')
     app.config.setdefault('UPLOADER_BLUEPRINT_NAME', '_uploader')
-    app.config.setdefault('UPLOADER_BLUEPRINT_URL_PREFIX', None)
+    app.config.setdefault('UPLOADER_BLUEPRINT_URL_PREFIX', '/media')
     app.config.setdefault('UPLOADER_BLUEPRINT_SUBDOMAIN', None)
     app.config.setdefault('UPLOADER_DEFAULT_ENDPOINT', 'download')
 
