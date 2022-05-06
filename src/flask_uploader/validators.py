@@ -9,6 +9,7 @@ from .utils import get_extension
 
 __all__ = (
     'ExtensionValidator',
+    'MimeTypeValidator',
     'TValidator',
     'ValidationError',
 )

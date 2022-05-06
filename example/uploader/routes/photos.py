@@ -1,18 +1,20 @@
 import os
 
-from flask import Blueprint, render_template, request, redirect,url_for
+from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_uploader import Uploader
 from flask_uploader.formats import guess_type
 from flask_uploader.storages import FileSystemStorage
 from flask_uploader import validators as v
 
 
-bp = Blueprint('files', __name__, url_prefix='/files')
-files_uploader = Uploader(
-    'files',
+bp = Blueprint('photos', __name__, url_prefix='/photos')
+photos_uploader = Uploader(
+    'photos',
     FileSystemStorage(dest='.'),
     validators=[
-        # v.ExtensionValidator(v.ExtensionValidator.IMAGES)
+        v.ExtensionValidator(
+            v.ExtensionValidator.IMAGES
+        )
         # v.MimeTypeValidator(v.MimeTypeValidator.WPS_OFFICE)
     ]
 )
@@ -25,13 +27,13 @@ files_uploader = Uploader(
 
 
 def iter_files():
-    upload_dir = files_uploader.storage.get_root_dir()
+    upload_dir = photos_uploader.storage.get_root_dir()
 
     for root, dirs, files in os.walk(upload_dir):
         for f in files:
             path = os.path.abspath(os.path.join(root, f))
             lookup = os.path.relpath(path, upload_dir)
-            url = files_uploader.get_url(lookup)
+            url = photos_uploader.get_url(lookup)
             yield lookup, url, guess_type(url, use_external=True)
 
 
@@ -43,11 +45,20 @@ def list():
 
 @bp.route('/remove/<path:lookup>', methods=['POST'])
 def remove(lookup):
-    files_uploader.remove(lookup)
-    return redirect(url_for('.list'))
+    photos_uploader.remove(lookup)
+    return redirect(request.url)
 
 
 @bp.route('/', methods=['POST'])
 def upload():
-    files_uploader.save(request.files['file'], overwrite=True)
-    return redirect(url_for('.list'))
+    if 'file' not in request.files:
+        flash('No file part.')
+        return redirect(request.url)
+
+    try:
+        photos_uploader.save(request.files['file'], overwrite=True)
+        flash('File saved successfully.')
+    except v.ValidationError as err:
+        flash(str(err))
+
+    return redirect(request.url)
