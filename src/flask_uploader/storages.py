@@ -8,6 +8,7 @@ from flask import current_app
 from werkzeug.datastructures import FileStorage
 # from werkzeug.utils import secure_filename
 
+from .formats import guess_type
 from .utils import get_extension, increment_path, md5stream, split_pairs
 
 
@@ -148,7 +149,11 @@ class FileSystemStorage(AbstractStorage):
         return root_dir
 
     def load(self, lookup: str) -> File:
-        return File(os.path.join(self.get_root_dir(), lookup))
+        return File(
+            path_or_file=os.path.join(self.get_root_dir(), lookup),
+            filename=os.path.basename(lookup),
+            mimetype=guess_type(lookup)
+        )
 
     def remove(self, lookup: str) -> None:
         path = os.path.join(self.get_root_dir(), lookup)
