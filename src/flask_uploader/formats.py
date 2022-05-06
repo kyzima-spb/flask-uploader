@@ -11,6 +11,10 @@ https://help.gnome.org/users/gnumeric/stable/sect-file-formats.html.en
 from __future__ import annotations
 import typing as t
 
+import mimetypes
+
+from .utils import get_extension
+
 
 class FileFormat(t.NamedTuple):
     extension: str
@@ -171,3 +175,37 @@ SO = FileFormat('so', 'application/octet-stream')
 EXE = FileFormat('exe', 'application/x-msdownload')
 DLL = FileFormat('dll', 'application/x-msdownload')
 EXECUTABLES = frozenset((SO, EXE, DLL))
+
+
+format_map: dict[str, FileFormat] = {
+    value.extension: value
+    for name, value in globals().items()
+    if isinstance(value, FileFormat)
+}
+
+
+def get_format(path_or_url: str) -> t.Optional[FileFormat]:
+    """Returns a FileFormat object for the given file or URL."""
+    return format_map.get(
+        get_extension(path_or_url).lstrip('.').lower()
+    )
+
+
+def guess_type(path_or_url: str, use_external: bool = False) -> t.Optional[str]:
+    """
+    Returns a mime type for the given file or URL.
+
+    Arguments:
+        path_or_url (str): The path to the file or URL.
+        use_external (bool): Use the mimetype package.
+    """
+    fmt = get_format(path_or_url)
+
+    if fmt is not None:
+        return fmt.mimetype
+
+    if use_external:
+        mimetype, _ = mimetypes.guess_type(path_or_url)
+        return mimetype
+
+    return None
