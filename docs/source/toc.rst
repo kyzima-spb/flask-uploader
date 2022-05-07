@@ -7,4 +7,5 @@ Flask-Uploader
    index
    storages
    validators
+   migrate
    api_reference

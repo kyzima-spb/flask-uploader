@@ -113,4 +113,5 @@ intersphinx_mapping = {
     'flask': ('https://flask.palletsprojects.com/en/2.1.x/', None),
     'werkzeug': ('https://werkzeug.palletsprojects.com/en/2.1.x/', None),
     'flask_wtf': ('https://flask-wtf.readthedocs.io/en/1.0.x/', None),
+    'flask_uploads': ('https://pythonhosted.org/Flask-Uploads/', None),
 }
