@@ -19,10 +19,7 @@ __all__ = (
     'HashedFilenameStrategy',
 )
 
-
-class TFilenameStrategy(t.Protocol):
-    def __call__(self, storage: FileStorage) -> str:
-        ...
+TFilenameStrategy = t.Callable[[FileStorage], str]
 
 
 class HashedFilenameStrategy:

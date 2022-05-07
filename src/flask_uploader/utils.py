@@ -14,11 +14,7 @@ __all__ = (
 
 
 def get_extension(filename: str) -> str:
-    """
-    Returns the file extension.
-
-    '天安门.jpg'
-    """
+    """Returns the file extension."""
     _, ext = os.path.splitext(filename)
     return ext
 

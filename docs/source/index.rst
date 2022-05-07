@@ -21,9 +21,7 @@ Flask-Uploader
 Или установите последнюю тестовую версию, которая может и будет содержать баги =)
 Она автоматически собирается и публикуется на `test.pypi.org`_::
 
-    pip install \
-        --extra-index-url=https://test.pypi.org/simple \
-        flask-uploader
+    pip install -i https://test.pypi.org/simple/ flask-uploader
 
 
 Конфигурация
@@ -309,9 +307,6 @@ Flask-Uploader
     location ~ /photos/(.+) {
         root /path/to/uploader_root_dir;
     }
-
-Имя файла
----------
 
 
 .. |PyPI| image:: https://img.shields.io/pypi/v/flask-uploader.svg
