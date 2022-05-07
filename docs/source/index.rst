@@ -29,11 +29,11 @@ Flask-Uploader
 Конфигурация
 ------------
 
-Это расширение использует для инициализации функцию :py:func:`~flask_uploader.init_uploader`
-(правилами разработки расширений для Flask это допустимо).
+``Flask_uploader`` использует для инициализации функцию :py:func:`~flask_uploader.init_uploader`
+(это допустимо `правилами разработки расширений`_ для Flask).
 Вызывать эту фукнцию допустимо в любом месте, обычно это:
 
-* фабричная функция, которая возвращает экземлпяр приложения (предпочтительный вариант)
+* `фабричная функция`_, которая возвращает экземпляр приложения (предпочтительный вариант)
 * модуль с экземплярами всех используемых расширений
 * модуль, в котором вы создаете экземпляр приложения (худший вариант)
 
@@ -59,16 +59,20 @@ Flask-Uploader
 =========================================    ================================================================
 `UPLOADER_ROOT_DIR`                          Корневая директория для загруженных файлов.
                                              Должна существовать и иметь права на запись.
-                                             По-умолчанию ``''``, но обязателен для
+                                             По-умолчанию ``''``, но обязательна для
                                              :py:class:`~flask_uploader.storages.FileSystemStorage`.
-`UPLOADER_BLUEPRINT_NAME`                    Программное имя, используемое внутренним Blueprint.
+`UPLOADER_BLUEPRINT_NAME`                    Программное имя, используемое
+                                             :ref:`внутренним Blueprint <Доступ к файлу>`.
                                              По-умолчанию ``_uploader``.
-`UPLOADER_BLUEPRINT_URL_PREFIX`              URL префикс, используемый внутренним Blueprint.
+`UPLOADER_BLUEPRINT_URL_PREFIX`              URL префикс, используемый
+                                             :ref:`внутренним Blueprint <Доступ к файлу>`.
                                              По-умолчанию ``/media``.
-`UPLOADER_BLUEPRINT_SUBDOMAIN`               Имя поддомена, используемое внутренним Blueprint.
+`UPLOADER_BLUEPRINT_SUBDOMAIN`               Имя поддомена, используемое
+                                             :ref:`внутренним Blueprint <Доступ к файлу>`.
                                              По-умолчанию ``None``.
 `UPLOADER_DEFAULT_ENDPOINT`                  Имя входной точки для доступа к загруженному файлу,
-                                             используемое внутренним Blueprint.
+                                             используемое
+                                             :ref:`внутренним Blueprint <Доступ к файлу>`.
                                              По-умолчанию ``download``.
 =========================================    ================================================================
 
@@ -88,18 +92,19 @@ Flask-Uploader
 Это имя используется :ref:`в маршруте по-умолчанию <Маршруты по-умолчанию>`
 и :ref:`для получения ранее созданного экземпляра загрузчика <Поиск загрузчика>`.
 
-Во втором аргументе конструктора необходимо передать экземпляр выбранного хранилища.
+Во втором аргументе конструктора необходимо передать экземпляр :ref:`выбранного хранилища <storages>`.
 
-Остальные аргументы конструктора являются не обязательными, однако помните,
-что первое правило разработчика - "не доверять пользователю", поэтому любые входные данные должны быть отвалидированы.
+Остальные аргументы конструктора являются необязательными, однако помните,
+что первое правило разработчика - `"не доверять пользователю"`,
+поэтому любые входные данные должны быть :ref:`отвалидированы <validators>`.
 
 По-умолчанию именованный аргумент ``validators`` конструктора пустой.
 Это означает, что загрузчик разрешает любой файл.
 Обязательно передайте значение этого аргумента в зависимости от вашей задачи.
 
-В примере мы создаем загрузчик с именем ``images``,
+В примере мы создаем загрузчик с именем ``photos``,
 который будет сохранять загруженные файлы на жестком диске относительно корня директории,
-заданной конфигурационной опцией ``UPLOADER_ROOT_DIR``.
+заданной конфигурационной опцией ``UPLOADER_ROOT_DIR`` в поддиректории ``photos``.
 Разрешены только файлы изображений, для всех остальных файлов будет выброшено исключение
 :py:class:`~flask_uploader.validators.ValidationError`.
 
@@ -108,31 +113,19 @@ Flask-Uploader
     # Module with endpoint handlers, for example - routes/photos.py
 
     from flask_uploader import Uploader
-    from flask_uploader import validators
     from flask_uploader.storages import FileSystemStorage
+    from flask_uploader.validators import ExtensionValidator
 
 
-    images_uploader = Uploader(
-        'images',
-        FileSystemStorage(dest='.'),
+    photos_uploader = Uploader(
+        'photos',
+        FileSystemStorage(dest='photos'),
         validators=[
-            validators.ExtensionValidator(
-                validators.ExtensionValidator.IMAGES
+            ExtensionValidator(
+                ExtensionValidator.IMAGES
             ),
         ]
     )
-
-Маршруты по-умолчанию
-~~~~~~~~~~~~~~~~~~~~~
-
-``Flask-Uploader`` создает экземпляр :py:class:`~flask.Blueprint`
-для регистрации обработчиков конечных точек по-умолчанию:
-
-* ``/<name>/<path:lookup>`` - маршрут для доступа к загруженному файлу,
-  где ``name`` это уникальное имя загрузчика, а ``lookup`` - уникальный идентификатор файла.
-  В примере с фотографиями, загруженный файл будет доступен для скачивания по адресу::
-
-      http://127.0.0.1:5000/media/photos/<lookup>
 
 Поиск загрузчика
 ~~~~~~~~~~~~~~~~
@@ -145,7 +138,7 @@ Flask-Uploader
 
     from flask_uploader import Uploader
 
-    images_uploader = Uploader.get_instance('images')
+    photos_uploader = Uploader.get_instance('photos')
 
 Входная точка
 -------------
@@ -176,6 +169,150 @@ Flask-Uploader
 
         return redirect(request.url)
 
+Доступ к файлу
+--------------
+
+``Flask-Uploader`` создает экземпляр :py:class:`~flask.Blueprint`
+для регистрации обработчиков конечных точек по-умолчанию.
+
+Доступ по-умолчанию
+~~~~~~~~~~~~~~~~~~~
+
+``/<name>/<path:lookup>`` - маршрут по-умолчанию для доступа к загруженному файлу,
+где ``name`` это уникальное имя загрузчика, а ``lookup`` - уникальный идентификатор файла,
+используемый для поиска в :ref:`выбранном хранилище <storages>`.
+В примере с фотографиями, загруженный файл будет доступен для скачивания по адресу::
+
+    http://127.0.0.1:5000/media/photos/<lookup>
+
+**lookup** - имеет строковой тип даных, в большинстве случаев это относительный путь к файлу,
+поэтому в маршруте используется URL-конвертер :py:class:`~werkzeug.routing.PathConverter`.
+
+Запрет доступа
+~~~~~~~~~~~~~~
+
+Если вам нужно запретить публичный доступ к загруженным файлам для маршрута по-умолчанию,
+то в момент создания экземпляра :py:class:`~flask_uploader.Uploader` в конструктор
+передайте аргумент ``use_auto_route`` со значением ``False``:
+
+.. code-block:: python
+
+    # Module with endpoint handlers, for example - routes/payments.py
+
+    from flask_uploader import Uploader
+    from flask_uploader.storages import FileSystemStorage
+    from flask_uploader.validators import ExtensionValidator
+
+
+    payments_uploader = Uploader(
+        'payments',
+        FileSystemStorage(dest='payments'),
+        use_auto_route=False,
+        validators=[
+            ExtensionValidator(
+                ExtensionValidator.IMAGES | ExtensionValidator.EDOCUMENTS
+            ),
+        ]
+    )
+
+Контроль доступа
+~~~~~~~~~~~~~~~~
+
+Доступ к загруженному файлу можно контролировать, это может быть полезно в следующих случаях:
+
+* нужно изменить публичный URL-адрес
+* запретить доступ для неаутентифицированных пользователей
+* использовать промежуточное ПО или HTTP-сервер для обслуживания файлов
+
+Для этого в момент создания экземпляра :py:class:`~flask_uploader.Uploader` в конструктор
+передайте аргумент ``endpoint`` с именем конечной точки, включая имена всех Blueprint:
+
+.. code-block:: python
+
+    # Module with endpoint handlers, for example - routes/invoices.py
+
+    from flask import Blueprint, send_file, abort
+    from flask_login import login_required
+    from flask_uploader import Uploader
+    from flask_uploader.storages import FileSystemStorage
+    from flask_uploader.validators import MimeTypeValidator
+
+
+    bp = Blueprint('invoices', __name__, url_prefix='/invoices')
+
+    invoices_uploader = Uploader(
+        'invoices',
+        FileSystemStorage(dest='invoices'),
+        endpoint='invoices.download',
+        validators=[
+            MimeTypeValidator(
+                MimeTypeValidator.OFFICE
+            ),
+        ]
+    )
+
+
+    @bp.route('/<path:lookup>')
+    @login_required
+    def download(lookup):
+        try:
+            file = invoices_uploader.load(lookup)
+
+            return send_file(
+                path_or_file=file.path_or_file,
+                attachment_filename=file.filename,
+                mimetype=file.mimetype,
+                as_attachment=True,
+            )
+        except RuntimeError:
+            abort(404)
+
+Промежуточное ПО
+~~~~~~~~~~~~~~~~
+
+Чтобы отдавать загруженные файлы, используя промежуточное ПО, например Nginx,
+зарегистрируйте конечную точку как ``build_only``,
+чтобы :py:func:`~flask.url_for` работал без функции просмотра.
+
+.. code-block:: python
+
+    # Module with endpoint handlers, for example - routes/photos.py
+
+    from flask import Blueprint
+    from flask_uploader import Uploader
+    from flask_uploader.storages import FileSystemStorage
+    from flask_uploader.validators import ExtensionValidator
+
+
+    bp = Blueprint('photos', __name__, url_prefix='/photos')
+
+    photos_uploader = Uploader(
+        'photos',
+        FileSystemStorage(dest='photos'),
+        endpoint='photos.download',
+        validators=[
+            ExtensionValidator(
+                ExtensionValidator.IMAGES
+            ),
+        ]
+    )
+
+
+    bp.add_url_rule('/<path:lookup>', endpoint='download', build_only=True)
+
+А затем в конфигурационном файла виртуального хоста добавьте следующее правило:
+
+.. code-block:: nginx
+
+    # Part of the virtual host configuration file
+
+    location ~ /photos/(.+) {
+        root /path/to/uploader_root_dir;
+    }
+
+Имя файла
+---------
+
 
 .. |PyPI| image:: https://img.shields.io/pypi/v/flask-uploader.svg
    :target: https://pypi.org/project/flask-uploader/
@@ -193,3 +330,5 @@ Flask-Uploader
    :alt: Documentation Status
 
 .. _test.pypi.org: https://test.pypi.org/project/flask-uploader/
+.. _правилами разработки расширений: https://flask.palletsprojects.com/en/2.1.x/extensiondev/#initializing-extensions
+.. _фабричная функция: https://flask.palletsprojects.com/en/2.1.x/patterns/appfactories/
