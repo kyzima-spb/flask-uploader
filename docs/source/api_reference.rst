@@ -43,6 +43,10 @@ Storages
     :members:
     :show-inheritance:
 
+.. autoclass:: flask_uploader.contrib.pymongo.GridFSStorage
+    :members:
+    :show-inheritance:
+
 Validators
 ----------
 

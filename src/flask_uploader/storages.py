@@ -77,6 +77,8 @@ class File(t.NamedTuple):
 class AbstractStorage(metaclass=ABCMeta):
     """A file storage that provides basic file operations."""
 
+    __slots__ = ('filename_strategy',)
+
     def __init__(
         self,
         filename_strategy: t.Optional[TFilenameStrategy] = None
@@ -119,6 +121,8 @@ class AbstractStorage(metaclass=ABCMeta):
 
 class FileSystemStorage(AbstractStorage):
     """Local file storage on the HDD."""
+
+    __slots__ = ('dest',)
 
     def __init__(
         self,
