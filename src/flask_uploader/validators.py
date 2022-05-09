@@ -1,6 +1,7 @@
 from __future__ import annotations
 import typing as t
 
+from PIL import Image
 from werkzeug.datastructures import FileStorage
 
 from . import formats
@@ -10,6 +11,7 @@ from .utils import get_extension
 
 __all__ = (
     'ExtensionValidator',
+    'ImageSizeValidator',
     'MimeTypeValidator',
     'TValidator',
 )
@@ -66,7 +68,7 @@ class ExtensionValidator:
     # Shared libraries and executable file formats
     EXECUTABLES = frozenset(f.extension for f in formats.EXECUTABLES)
 
-    def __init__(self, extensions: t.Sequence[str]):
+    def __init__(self, extensions: set[str]):
         self.extensions = extensions
 
     def __call__(self, storage: FileStorage) -> None:
@@ -130,14 +132,30 @@ class MimeTypeValidator:
     # Shared libraries and executable file formats
     EXECUTABLES = frozenset(f.mimetype for f in formats.EXECUTABLES)
 
-    def __init__(self, mime_types: t.Sequence[str]):
+    def __init__(self, mime_types: set[str]):
         self.mime_types = mime_types
 
     def __call__(self, storage: FileStorage) -> None:
-        print(storage.mimetype)
-
         if storage.mimetype is None:
             raise ValidationError('There is no HTTP Content-Type header.')
 
         if storage.mimetype not in self.mime_types:
             raise ValidationError('This file type is not allowed to be uploaded.')
+
+
+class ImageSizeValidator:
+    def __init__(self, width: int, height: int) -> None:
+        self.width = width
+        self.height = height
+
+    def __call__(self, storage: FileStorage) -> None:
+        image = Image.open(storage.stream)
+        width, height = image.size
+        storage.stream.seek(0)
+
+        if self.width < width or self.height < height:
+            raise ValidationError(
+                'The image size is larger than %dx%d.' % (
+                    self.width, self.height
+                )
+            )

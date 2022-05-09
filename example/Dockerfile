@@ -1,4 +1,4 @@
-FROM kyzimaspb/flask:3.9-slim-bullseye
+FROM kyzimaspb/flask:3.10-slim-bullseye
 
 LABEL maintainer="Kirill Vercetti <office@kyzima-spb.com>"
 
