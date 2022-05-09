@@ -4,6 +4,7 @@ import typing as t
 from werkzeug.datastructures import FileStorage
 
 from . import formats
+from .exceptions import ValidationError
 from .utils import get_extension
 
 
@@ -11,20 +12,9 @@ __all__ = (
     'ExtensionValidator',
     'MimeTypeValidator',
     'TValidator',
-    'ValidationError',
 )
 
-
-class TValidator(t.Protocol):
-    def __call__(self, storage: FileStorage) -> None:
-        ...
-
-
-class ValidationError(Exception):
-    pass
-
-
-UploadNotAllowed = ValidationError
+TValidator = t.Callable[[FileStorage], None]
 
 
 class ExtensionValidator:

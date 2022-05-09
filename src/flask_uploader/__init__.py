@@ -14,6 +14,7 @@ from flask.views import MethodView
 from flask.typing import ResponseReturnValue
 from werkzeug.datastructures import FileStorage
 
+from .exceptions import FileNotFound, InvalidLookup
 from .storages import AbstractStorage, File
 from .validators import TValidator
 from .utils import md5stream, split_pairs
@@ -181,8 +182,9 @@ class DownloadView(MethodView):
                 mimetype=f.mimetype,
                 as_attachment=True,
             )
-        except RuntimeError:
-            abort(404)
+        except (FileNotFound, InvalidLookup) as err:
+            msg = str(err) if current_app.debug else None
+            abort(404, msg)
 
 
 def init_uploader(app: Flask) -> None:

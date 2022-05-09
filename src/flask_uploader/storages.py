@@ -17,6 +17,7 @@ __all__ = (
     'File',
     'FileSystemStorage',
     'HashedFilenameStrategy',
+    'TFilenameStrategy',
 )
 
 TFilenameStrategy = t.Callable[[FileStorage], str]
