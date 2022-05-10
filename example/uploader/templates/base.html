@@ -21,15 +21,30 @@
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="{{ url_for('site.photos.list') }}">
+            <a
+              class="nav-link {% if request.endpoint == 'site.photos.index' %}active{% endif %}"
+              aria-current="page"
+              href="{{ url_for('site.photos.index') }}"
+            >
               File System
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link disabled" href="#">GridFS</a>
+            <a
+              class="nav-link {% if request.endpoint == 'site.books.index' %}active{% endif %}"
+              aria-current="page"
+              href="{{ url_for('site.books.index') }}"
+            >
+              GridFS
+            </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link disabled">S3</a>
+            <a
+              class="nav-link {% if request.endpoint == 'site.s3.index' %}active{% endif %} disabled"
+              aria-current="page"
+            >
+              S3
+            </a>
           </li>
         </ul>
 {#        <form class="d-flex">#}

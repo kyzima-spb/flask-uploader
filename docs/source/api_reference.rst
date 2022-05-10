@@ -3,8 +3,8 @@
 API Reference
 =============
 
-Core
-----
+Core Reference
+--------------
 
 .. autofunction:: flask_uploader.init_uploader
 
@@ -20,8 +20,8 @@ Core
     :members:
     :show-inheritance:
 
-Exceptions
-----------
+Exceptions Reference
+--------------------
 
 .. autoclass:: flask_uploader.exceptions.UploaderException
     :members:
@@ -47,8 +47,8 @@ Exceptions
     :members:
     :show-inheritance:
 
-Storages
---------
+Storage Reference
+-----------------
 
 .. autoclass:: flask_uploader.storages.File
     :members:
@@ -74,16 +74,16 @@ Storages
     :members:
     :show-inheritance:
 
-Utils
------
+Utils Reference
+---------------
 
 .. autofunction:: flask_uploader.utils.get_extension
 .. autofunction:: flask_uploader.utils.md5file
 .. autofunction:: flask_uploader.utils.md5stream
 .. autofunction:: flask_uploader.utils.split_pairs
 
-Validators
-----------
+Validators Reference
+--------------------
 
 .. autoclass:: flask_uploader.validators.ValidationError
     :members:

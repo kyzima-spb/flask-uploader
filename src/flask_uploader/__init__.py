@@ -151,6 +151,10 @@ class Uploader(metaclass=UploaderMeta):
             _external=external
         )
 
+    def iter_files(self) -> t.Iterable[File]:
+        """Returns an iterator over all files in the storage."""
+        return self.storage.iter_files()
+
     def load(self, lookup: str) -> File:
         """Reads and returns a ``File`` object for an identifier."""
         return self.storage.load(lookup)

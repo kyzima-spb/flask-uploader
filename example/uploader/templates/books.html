@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% import 'macros.html' as macro %}
+
+{% block main %}
+  <div class="row">
+    <div class="col">
+      <h1 class="my-4">GridFSStorage Example</h1>
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col">
+      <form method="post" enctype="multipart/form-data" novalidate>
+        {{ form.hidden_tag() }}
+        <div class="mb-3">
+          {{ form.title.label(class='form-label') }}
+          <div class="input-group">
+            {{ form.title(class='form-control is-invalid' if form.title.errors else 'form-control') }}
+            <div class="invalid-feedback">
+              {{ form.title.errors | join(',') }}
+            </div>
+          </div>
+        </div>
+        <div class="mb-3">
+          {{ form.file.label(class='form-label') }}
+          <div class="input-group">
+            {{ form.file(class='form-control is-invalid' if form.file.errors else 'form-control') }}
+            <div class="invalid-feedback">
+              {{ form.file.errors | join(',') }}
+            </div>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col">
+      {{ macro.render_files_grid(uploader) }}
+    </div>
+  </div>
+{% endblock main %}

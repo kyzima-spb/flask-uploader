@@ -1,0 +1,26 @@
+{% macro render_files_grid(uploader) %}
+  <h2 class="mb-3">Uploaded files</h2>
+  <table class="table table-striped align-middle">
+    <tr>
+      <th>URL</th>
+      <th>Filename</th>
+      <th>Mime-Type</th>
+      <th>Actions</th>
+    </tr>
+    {% for f in uploader.iter_files() %}
+      <tr>
+        <td>
+          {% set url = uploader.get_url(f.lookup) %}
+          <a href="{{ url }}">{{ url }}</a>
+        </td>
+        <td>{{ f.filename }}</td>
+        <td>{{ f.mimetype }}</td>
+        <td>
+          <form action="{{ url_for('.remove', lookup=f.lookup) }}" method="post">
+            <button type="submit" class="btn btn-danger">Delete</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+{% endmacro %}
