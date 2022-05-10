@@ -3,10 +3,14 @@ import typing as t
 from bson.errors import InvalidId
 from bson.objectid import ObjectId
 from flask_pymongo import PyMongo
-from gridfs import GridFS
+from gridfs import GridFSBucket
 from werkzeug.datastructures import FileStorage
 
-from ..exceptions import FileNotFound, InvalidLookup
+from ..exceptions import (
+    FileNotFound,
+    InvalidLookup,
+    MultipleFilesFound,
+)
 from ..storages import (
     AbstractStorage,
     File,
@@ -51,13 +55,23 @@ class GridFSStorage(AbstractStorage):
         self.mongo = mongo
         self.collection = collection
 
-    def get_fs(self) -> GridFS:
+    def get_bucket(self) -> GridFSBucket:
         """Returns an object for working with GridFS."""
-        return GridFS(self.mongo.db, self.collection)
+        return GridFSBucket(self.mongo.db, self.collection)
+
+    def iter_files(self) -> t.Iterable[File]:
+        for grid_out in self.get_bucket().find():
+            yield File(
+                lookup=Lookup(grid_out._id),
+                path_or_file=t.cast(t.BinaryIO, grid_out),
+                filename=grid_out.filename,
+                mimetype=grid_out.metadata['contentType'],
+            )
 
     def load(self, lookup: t.Union[str, ObjectId]) -> File:
-        fs = self.get_fs()
-        grid_out = fs.find_one({'_id': Lookup(lookup).value})
+        bucket = self.get_bucket()
+        lookup = Lookup(lookup)
+        grid_out = bucket.open_download_stream(lookup.value)
 
         if grid_out is None:
             raise FileNotFound(
@@ -66,29 +80,42 @@ class GridFSStorage(AbstractStorage):
             )
 
         return File(
+            lookup=lookup,
             path_or_file=t.cast(t.BinaryIO, grid_out),
             filename=grid_out.filename,
             mimetype=grid_out.content_type,
         )
 
     def remove(self, lookup: t.Union[str, ObjectId]) -> None:
-        self.get_fs().delete(Lookup(lookup).value)
+        self.get_bucket().delete(Lookup(lookup).value)
 
     def save(self, storage: FileStorage, overwrite: bool = False) -> Lookup:
-        fs = self.get_fs()
+        bucket = self.get_bucket()
         filename = self.filename_strategy(storage)
-        kwargs = {
-            'filename': filename,
-            'content_type': guess_type(filename, use_external=True),
-        }
+        content_type = guess_type(filename, use_external=True)
 
         if overwrite:
-            grid_out = fs.find_one(
-                {'filename': filename}, sort=[('uploadDate', 1)]
-            )
+            result = list(bucket.find({'filename': filename}).limit(2))
+            found = len(result)
 
-            if grid_out is not None:
-                fs.delete(grid_out._id)
-                kwargs['_id'] = grid_out._id
+            if found > 1:
+                raise MultipleFilesFound(
+                    'Multiple files were found. Overwriting is not possible.'
+                )
 
-        return Lookup(fs.put(storage.stream, **kwargs))
+            if found:
+                lookup = Lookup(result[0]._id)
+                bucket.delete(lookup.value)
+                bucket.upload_from_stream_with_id(
+                    lookup.value,
+                    filename,
+                    storage.stream,
+                    metadata={'contentType': content_type}
+                )
+                return lookup
+
+        return Lookup(bucket.upload_from_stream(
+            filename,
+            storage.stream,
+            metadata={'contentType': content_type}
+        ))

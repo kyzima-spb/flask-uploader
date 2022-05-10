@@ -20,6 +20,33 @@ Core
     :members:
     :show-inheritance:
 
+Exceptions
+----------
+
+.. autoclass:: flask_uploader.exceptions.UploaderException
+    :members:
+    :show-inheritance:
+
+.. autoclass:: flask_uploader.exceptions.FileNotFound
+    :members:
+    :show-inheritance:
+
+.. autoclass:: flask_uploader.exceptions.InvalidLookup
+    :members:
+    :show-inheritance:
+
+.. autoclass:: flask_uploader.exceptions.MultipleFilesFound
+    :members:
+    :show-inheritance:
+
+.. autoclass:: flask_uploader.exceptions.ValidationError
+    :members:
+    :show-inheritance:
+
+.. autoclass:: flask_uploader.exceptions.UploadNotAllowed
+    :members:
+    :show-inheritance:
+
 Storages
 --------
 
@@ -47,6 +74,14 @@ Storages
     :members:
     :show-inheritance:
 
+Utils
+-----
+
+.. autofunction:: flask_uploader.utils.get_extension
+.. autofunction:: flask_uploader.utils.md5file
+.. autofunction:: flask_uploader.utils.md5stream
+.. autofunction:: flask_uploader.utils.split_pairs
+
 Validators
 ----------
 
@@ -65,11 +100,3 @@ Validators
 .. autoclass:: flask_uploader.validators.MimeTypeValidator
     :members:
     :show-inheritance:
-
-Utils
------
-
-.. autofunction:: flask_uploader.utils.get_extension
-.. autofunction:: flask_uploader.utils.md5file
-.. autofunction:: flask_uploader.utils.md5stream
-.. autofunction:: flask_uploader.utils.split_pairs

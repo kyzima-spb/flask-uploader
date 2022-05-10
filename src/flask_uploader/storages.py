@@ -70,6 +70,7 @@ class HashedFilenameStrategy:
 class File(t.NamedTuple):
     """The result of reading a file from the selected storage."""
     path_or_file: t.Union[str, t.BinaryIO]
+    lookup: t.Optional[str] = None
     filename: t.Optional[str] = None
     mimetype: t.Optional[str] = None
 
