@@ -1,12 +1,11 @@
 from __future__ import annotations
 from abc import ABCMeta, abstractmethod
-from glob import iglob
+from datetime import datetime
 import os
 import typing as t
 
 from flask import current_app
 from werkzeug.datastructures import FileStorage
-# from werkzeug.utils import secure_filename
 
 from .formats import guess_type
 from .utils import get_extension, increment_path, md5stream, split_pairs
@@ -18,9 +17,27 @@ __all__ = (
     'FileSystemStorage',
     'HashedFilenameStrategy',
     'TFilenameStrategy',
+    'TimestampStrategy',
 )
 
+# from werkzeug.utils import secure_filename
+#
+#
+# def original_filename(storage: FileStorage) -> str:
+#     # Non-ASCII characters will be removed
+#     # For filename '天安门.jpg' returns 'jpg'
+#     return secure_filename(storage.filename) if storage.filename else ''
+
+
 TFilenameStrategy = t.Callable[[FileStorage], str]
+
+
+class File(t.NamedTuple):
+    """The result of reading a file from the selected storage."""
+    path_or_file: t.Union[str, t.BinaryIO]
+    lookup: t.Optional[str] = None
+    filename: t.Optional[str] = None
+    mimetype: t.Optional[str] = None
 
 
 class HashedFilenameStrategy:
@@ -67,12 +84,34 @@ class HashedFilenameStrategy:
         return os.path.join(*folder, name) + ext
 
 
-class File(t.NamedTuple):
-    """The result of reading a file from the selected storage."""
-    path_or_file: t.Union[str, t.BinaryIO]
-    lookup: t.Optional[str] = None
-    filename: t.Optional[str] = None
-    mimetype: t.Optional[str] = None
+class TimestampStrategy:
+    """
+    The strategy uses the current timestamp as the filename.
+
+    Can be an integer or a formatted string.
+    """
+
+    __slots__ = ('fmt', 'as_int')
+
+    def __init__(
+        self,
+        fmt: str = '%Y-%m-%d-%H-%M-%S',
+        as_int: bool = False
+    ) -> None:
+        """
+        Arguments:
+            fmt (str): Format string.
+            as_int (bool): Name as an integer.
+        """
+        self.fmt = fmt
+        self.as_int = as_int
+
+    def __call__(self, storage: FileStorage) -> str:
+        now = datetime.now()
+        return '%s%s' % (
+            int(now.timestamp()) if self.as_int else now.strftime(self.fmt),
+            get_extension(storage.filename) if storage.filename else ''
+        )
 
 
 class AbstractStorage(metaclass=ABCMeta):

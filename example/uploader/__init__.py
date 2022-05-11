@@ -2,7 +2,7 @@ from flask import Flask
 from flask_uploader import init_uploader
 
 from . import routes
-from .routes.files import mongo
+from .routes.books import mongo
 
 
 def create_app():

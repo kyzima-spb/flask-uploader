@@ -68,7 +68,10 @@ class ExtensionValidator:
     # Shared libraries and executable file formats
     EXECUTABLES = frozenset(f.extension for f in formats.EXECUTABLES)
 
-    def __init__(self, extensions: set[str]):
+    def __init__(
+        self,
+        extensions: t.Union[set[str], frozenset[str]]
+    ) -> None:
         self.extensions = extensions
 
     def __call__(self, storage: FileStorage) -> None:
@@ -132,7 +135,10 @@ class MimeTypeValidator:
     # Shared libraries and executable file formats
     EXECUTABLES = frozenset(f.mimetype for f in formats.EXECUTABLES)
 
-    def __init__(self, mime_types: set[str]):
+    def __init__(
+        self,
+        mime_types: t.Union[set[str], frozenset[str]]
+    ) -> None:
         self.mime_types = mime_types
 
     def __call__(self, storage: FileStorage) -> None:
@@ -159,3 +165,8 @@ class ImageSizeValidator:
                     self.width, self.height
                 )
             )
+
+
+# def required_filename(storage: FileStorage) -> None:
+#     if not storage.filename:
+#         raise ValidationError('Filename is required.')
