@@ -39,7 +39,7 @@ from ..storages import (
     File,
     TFilenameStrategy,
 )
-from ..utils import increment_path_naive as increment_path
+from ..utils import increment_path
 
 
 __all__ = ('AWS', 'S3Storage')

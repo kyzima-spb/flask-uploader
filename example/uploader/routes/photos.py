@@ -9,8 +9,9 @@ from flask import (
     url_for,
 )
 from flask_uploader import Uploader
+from flask_uploader.exceptions import UploadNotAllowed
 from flask_uploader.storages import FileSystemStorage
-from flask_uploader.validators import MimeTypeValidator, ValidationError
+from flask_uploader.validators import MimeTypeValidator
 
 
 bp = Blueprint('photos', __name__, url_prefix='/photos')
@@ -42,9 +43,10 @@ def upload():
         return redirect(request.url)
 
     try:
-        photos_uploader.save(request.files['file'], overwrite=True)
+        # photos_uploader.save(request.files['file'], overwrite=True)
+        photos_uploader.save(request.files['file'])
         flash('File saved successfully.')
-    except ValidationError as err:
+    except UploadNotAllowed as err:
         flash(str(err))
 
     return redirect(request.url)

@@ -210,6 +210,7 @@ class FileSystemStorage(AbstractStorage):
 
     def load(self, lookup: str) -> File:
         return File(
+            lookup=lookup,
             path_or_file=os.path.join(self.get_root_dir(), lookup),
             filename=os.path.basename(lookup),
             mimetype=guess_type(lookup)
@@ -223,13 +224,41 @@ class FileSystemStorage(AbstractStorage):
 
         os.remove(path)
 
+    def _resolve_conflict(self, path: str) -> str:
+        """
+        If a file with the given path already exists in the file system,
+        this method is called to resolve the conflict.
+        It should return a new path for the file.
+
+        Runs in log(n) time where n is the number of existing files in sequence.
+        Author of this solution `James`_.
+
+        .. _`James`: https://stackoverflow.com/a/47087513/10509709
+        """
+        path_pattern = '%s_%%d%s' % os.path.splitext(path)
+        i = 1
+
+        # First do an exponential search
+        while os.path.exists(path_pattern % i):
+            i = i * 2
+
+        # Result lies somewhere in the interval (i/2..i]
+        # We call this interval (a..b] and narrow it down until a + 1 = b
+        a, b = (i // 2, i)
+
+        while a + 1 < b:
+            c = (a + b) // 2  # interval midpoint
+            a, b = (c, b) if os.path.exists(path_pattern % c) else (a, c)
+
+        return path_pattern % b
+
     def save(self, storage: FileStorage, overwrite: bool = False) -> str:
         root_dir = self.get_root_dir()
         lookup = self.filename_strategy(storage)
         path = os.path.join(root_dir, lookup)
 
         if not overwrite and os.path.exists(path):
-            path = increment_path('%s_%%d%s' % os.path.splitext(path))
+            path = self._resolve_conflict(path)
             lookup = os.path.relpath(path, root_dir)
 
         os.makedirs(os.path.dirname(path), exist_ok=True)

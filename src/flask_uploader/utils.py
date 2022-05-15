@@ -20,38 +20,14 @@ def get_extension(filename: str) -> str:
     return ext
 
 
-def increment_path(path_pattern: str) -> str:
+def increment_path(path: str, filenames: t.Iterable[str]) -> str:
     """
     Finds the next free path in an sequentially named list of files.
-    Author of this solution `James`_.
-
-    Runs in log(n) time where n is the number of existing files in sequence.
 
     Arguments:
-        path_pattern (str):
-            e.g. 'file-%s.txt'
-
-    .. _`James`: https://stackoverflow.com/a/47087513/10509709
+        path (str): The path to the file.
+        filenames (t.Iterable[str]): List of file paths to search.
     """
-    i = 1
-
-    # First do an exponential search
-    while os.path.exists(path_pattern % i):
-        i = i * 2
-
-    # Result lies somewhere in the interval (i/2..i]
-    # We call this interval (a..b] and narrow it down until a + 1 = b
-    a, b = (i // 2, i)
-
-    while a + 1 < b:
-        c = (a + b) // 2 # interval midpoint
-        a, b = (c, b) if os.path.exists(path_pattern % c) else (a, c)
-
-    return path_pattern % b
-
-
-def increment_path_naive(path: str, filenames) -> str:
-    """[len(path):-len(ext)]"""
     filename_pattern = '%s_%%d%s' % os.path.splitext(os.path.basename(path))
     pattern = re.compile(
         re.escape(filename_pattern).replace('%d', r'(\d+)'),
