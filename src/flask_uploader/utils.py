@@ -1,6 +1,7 @@
 from __future__ import annotations
 import hashlib
 import os
+import re
 import typing as t
 
 
@@ -47,6 +48,28 @@ def increment_path(path_pattern: str) -> str:
         a, b = (c, b) if os.path.exists(path_pattern % c) else (a, c)
 
     return path_pattern % b
+
+
+def increment_path_naive(path: str, filenames) -> str:
+    """[len(path):-len(ext)]"""
+    filename_pattern = '%s_%%d%s' % os.path.splitext(os.path.basename(path))
+    pattern = re.compile(
+        re.escape(filename_pattern).replace('%d', r'(\d+)'),
+        re.I
+    )
+    max_index = 0
+
+    for filename in filenames:
+        match = pattern.search(os.path.basename(filename))
+        if match:
+            index = int(match[1])
+            if max_index < index:
+                max_index = index
+
+    return os.path.join(
+        os.path.dirname(path),
+        filename_pattern % (max_index + 1)
+    )
 
 
 def md5file(filename: str) -> str:

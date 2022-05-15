@@ -3,6 +3,7 @@ __all__ = (
     'FileNotFound',
     'InvalidLookup',
     'MultipleFilesFound',
+    'PermissionDenied',
     'ValidationError',
     'UploadNotAllowed',
 )
@@ -10,6 +11,10 @@ __all__ = (
 
 class UploaderException(Exception):
     pass
+
+
+class UploadNotAllowed(UploaderException):
+    """Any error that prevents the uploaded file from being saved."""
 
 
 class FileNotFound(UploaderException):
@@ -23,15 +28,24 @@ class InvalidLookup(UploaderException):
     """
 
 
-class MultipleFilesFound(UploaderException):
+class MultipleFilesFound(UploadNotAllowed):
     """
     There are multiple files in the storage with the same name,
     including the prefix, if any.
     """
 
 
-class ValidationError(UploaderException):
+class PermissionDenied(UploaderException):
+    """
+    The specified action cannot be performed on the storage.
+
+    May appear in the following cases:
+
+    * The required directory does not exist.
+    * Insufficient rights to perform the action.
+    * The third party service responded with an error.
+    """
+
+
+class ValidationError(UploadNotAllowed):
     """An error when validation of the file."""
-
-
-UploadNotAllowed = ValidationError
