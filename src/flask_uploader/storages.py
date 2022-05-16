@@ -8,7 +8,7 @@ from flask import current_app
 from werkzeug.datastructures import FileStorage
 
 from .formats import guess_type
-from .utils import get_extension, increment_path, md5stream, split_pairs
+from .utils import get_extension, md5stream, split_pairs
 
 
 __all__ = (

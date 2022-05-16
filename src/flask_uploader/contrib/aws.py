@@ -24,13 +24,11 @@ if t.TYPE_CHECKING:
     from mypy_boto3_s3.client import S3Client
     from mypy_boto3_s3.service_resource import (
         Bucket,
-        ObjectSummary,
         S3ServiceResource,
     )
 
 from ..exceptions import (
     FileNotFound,
-    MultipleFilesFound,
     PermissionDenied,
 )
 from ..formats import guess_type
@@ -323,13 +321,26 @@ class S3Storage(AbstractStorage):
 
         return self.key_prefix[len(self.key_prefix):]
 
+    def _object_exists(self, key: str) -> bool:
+        """
+        Returns true if a file with the given key exists in S3 object storage,
+        false otherwise.
+        """
+        try:
+            self.get_bucket().Object(key).load()
+            return True
+        except ClientError:
+            return False
+
     @catch_client_error()
-    def _resolve_conflict(self, key: str, objects: list['ObjectSummary']) -> str:
+    def _resolve_conflict(self, key: str) -> str:
         """
         If a file with the key already exists in the S3 storage,
         this method is called to resolve the conflict.
         It should return a new key for the file.
         """
+        prefix, _ = os.path.splitext(key)
+        objects = self.get_bucket().objects.filter(Prefix=prefix)
         return increment_path(key, (obj.key for obj in objects))
 
     def get_bucket(self) -> 'Bucket':
@@ -411,17 +422,9 @@ class S3Storage(AbstractStorage):
         key = self._make_key(
             self.filename_strategy(storage)
         )
-        prefix, _ = os.path.splitext(key)
-        objects = list(bucket.objects.filter(Prefix=prefix))
-        found = len(objects)
 
-        if overwrite and found > 1:
-            raise MultipleFilesFound(
-                'Multiple files were found. Overwriting is not possible.'
-            )
-
-        if not overwrite and found > 0:
-            key = self._resolve_conflict(key, objects)
+        if not overwrite and self._object_exists(key):
+            key = self._resolve_conflict(key)
 
         content_type = guess_type(key, use_external=True) or 'application/octet-stream'
 
