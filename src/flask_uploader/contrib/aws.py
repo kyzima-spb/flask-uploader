@@ -319,7 +319,10 @@ class S3Storage(AbstractStorage):
         if hasattr(key, 'removeprefix'):
             return key.removeprefix(self.key_prefix)
 
-        return self.key_prefix[len(self.key_prefix):]
+        if key.startswith(self.key_prefix):
+            return self.key_prefix[len(self.key_prefix):]
+
+        return key
 
     def _object_exists(self, key: str) -> bool:
         """
