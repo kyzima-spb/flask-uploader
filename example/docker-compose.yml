@@ -22,7 +22,7 @@ services:
 
   backend:
     build:
-      context: ./
+      context: ./uploader
     secrets:
       - aws_credentials
     environment:

@@ -7,8 +7,8 @@ from .routes.files import aws
 
 
 def create_app():
-    app = Flask(__name__)
-    app.config.from_pyfile('instance/config.py')
+    app = Flask(__name__, instance_relative_config=True)
+    app.config.from_pyfile('config.py')
 
     mongo.init_app(app)
     aws.init_app(app)
