@@ -40,8 +40,9 @@
           </li>
           <li class="nav-item">
             <a
-              class="nav-link {% if request.endpoint == 'site.s3.index' %}active{% endif %} disabled"
+              class="nav-link {% if request.endpoint == 'site.files.index' %}active{% endif %}"
               aria-current="page"
+              href="{{ url_for('site.files.index') }}"
             >
               S3
             </a>

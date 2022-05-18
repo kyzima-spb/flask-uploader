@@ -3,16 +3,15 @@ from flask_uploader import init_uploader
 
 from . import routes
 from .routes.books import mongo
+from .routes.files import aws
 
 
 def create_app():
     app = Flask(__name__)
-
-    app.config['SECRET_KEY'] = 'Very secret string'
-    app.config['UPLOADER_ROOT_DIR'] = '/app/upload'
-    app.config['MONGO_URI'] = 'mongodb://user:demo@mongo/uploader?authSource=admin'
+    app.config.from_pyfile('instance/config.py')
 
     mongo.init_app(app)
+    aws.init_app(app)
     init_uploader(app)
 
     app.register_blueprint(routes.bp)
