@@ -1,38 +1,91 @@
+import os
+import re
 import typing as t
 
 from bson.errors import InvalidId
 from bson.objectid import ObjectId
 from flask_pymongo import PyMongo
-from gridfs import GridFSBucket
+from gridfs import GridFSBucket, GridOut, NoFile
+from pymongo import ASCENDING, DESCENDING
+from pymongo.client_session import ClientSession
 from werkzeug.datastructures import FileStorage
 
-from ..exceptions import (
-    FileNotFound,
-    InvalidLookup,
-    MultipleFilesFound,
-)
+from ..exceptions import FileNotFound, InvalidLookup
+from ..formats import guess_type
 from ..storages import (
     AbstractStorage,
     File,
     TFilenameStrategy,
 )
-from ..formats import guess_type
 
 
-__all__ = (
-    'GridFSStorage',
-    'Lookup',
-)
+__all__ = ('GridFSStorage', 'Lookup')
+
+
+class Bucket(GridFSBucket):
+    def delete_file(
+        self, filename: str, session: t.Optional[ClientSession] = None
+    ) -> None:
+        """Removes all versions of a file with the given name."""
+        cursor = self.find({'filename': filename}).sort('uploadDate', ASCENDING)
+        for grid_out in cursor:
+            self.delete(grid_out._id, session=session)
+
+    def find_last_version(
+        self, filename: str, session: t.Optional[ClientSession] = None
+    ) -> t.Optional[GridOut]:
+        """
+        Returns the last uploaded version of the file with the given name or None.
+        """
+        try:
+            return self.open_download_stream_by_name(
+                filename, revision=-1, session=session
+            )
+        except NoFile:
+            return None
+
+    def get_last_index(self, file_pattern: str) -> int:
+        """
+        Returns the last index found for the given filename pattern, otherwise 0.
+        """
+        file_pattern = re.escape(file_pattern).replace('%d', r'(\d+)')
+
+        try:
+            found = next(
+                self.find({'filename': {'$regex': file_pattern}})
+                    .sort('metadata.index', DESCENDING)
+                    .limit(1)
+            )
+            return found.metadata['index']
+        except StopIteration:
+            return 0
 
 
 class Lookup(str):
-    def __init__(self, value: t.Union[str, ObjectId]) -> None:
+    """
+    A search identifier that is both a string and stores a native identifier.
+    """
+
+    def __init__(self, value: str) -> None:
+        self._oid: t.Optional[ObjectId] = None
+
+    def __repr__(self):
+        return '<{} filename={!r} oid={!r}>'.format(
+            self.__class__.__name__, str(self), self.oid
+        )
+
+    @property
+    def oid(self):
+        return self._oid
+
+    @oid.setter
+    def oid(self, value):
         if not isinstance(value, ObjectId):
             try:
                 value = ObjectId(value)
             except InvalidId as err:
                 raise InvalidLookup(str(err)) from err
-        self.value = value
+        self._oid = value
 
 
 class GridFSStorage(AbstractStorage):
@@ -55,23 +108,32 @@ class GridFSStorage(AbstractStorage):
         self.mongo = mongo
         self.collection = collection
 
-    def get_bucket(self) -> GridFSBucket:
+    def _resolve_conflict(self, filename: str) -> tuple[str, int]:
+        """
+        If a file with the name already exists in the GridFS,
+        this method is called to resolve the conflict.
+        It should return a new filename and index.
+        """
+        filename_pattern = '%s_%%d%s' % os.path.splitext(filename)
+        index = self.get_bucket().get_last_index(filename_pattern) + 1
+        return filename_pattern % index, index
+
+    def get_bucket(self) -> Bucket:
         """Returns an object for working with GridFS."""
-        return GridFSBucket(self.mongo.db, self.collection)
+        return Bucket(self.mongo.db, self.collection)
 
     def iter_files(self) -> t.Iterable[File]:
         for grid_out in self.get_bucket().find():
             yield File(
-                lookup=Lookup(grid_out._id),
+                lookup=grid_out.filename,
                 path_or_file=t.cast(t.BinaryIO, grid_out),
-                filename=grid_out.filename,
+                filename=os.path.basename(grid_out.filename),
                 mimetype=grid_out.metadata['contentType'],
             )
 
-    def load(self, lookup: t.Union[str, ObjectId]) -> File:
+    def load(self, lookup: str) -> File:
         bucket = self.get_bucket()
-        lookup = Lookup(lookup)
-        grid_out = bucket.open_download_stream(lookup.value)
+        grid_out = bucket.find_last_version(lookup)
 
         if grid_out is None:
             raise FileNotFound(
@@ -82,40 +144,45 @@ class GridFSStorage(AbstractStorage):
         return File(
             lookup=lookup,
             path_or_file=t.cast(t.BinaryIO, grid_out),
-            filename=grid_out.filename,
-            mimetype=grid_out.content_type,
+            filename=os.path.basename(grid_out.filename),
+            mimetype=grid_out.metadata['contentType'],
         )
 
-    def remove(self, lookup: t.Union[str, ObjectId]) -> None:
-        self.get_bucket().delete(Lookup(lookup).value)
+    def remove(self, lookup: str) -> None:
+        self.get_bucket().delete_file(lookup)
 
     def save(self, storage: FileStorage, overwrite: bool = False) -> Lookup:
         bucket = self.get_bucket()
         filename = self.filename_strategy(storage)
-        content_type = guess_type(filename, use_external=True)
+        metadata = {
+            'contentType': guess_type(filename, use_external=True) or storage.mimetype,
+        }
+        found = bucket.find_last_version(filename)
 
-        if overwrite:
-            result = list(bucket.find({'filename': filename}).limit(2))
-            found = len(result)
+        if found and overwrite:
+            metadata.update(found.metadata)
 
-            if found > 1:
-                raise MultipleFilesFound(
-                    'Multiple files were found. Overwriting is not possible.'
-                )
+            lookup = Lookup(filename)
+            lookup.oid = found._id
 
-            if found:
-                lookup = Lookup(result[0]._id)
-                bucket.delete(lookup.value)
-                bucket.upload_from_stream_with_id(
-                    lookup.value,
-                    filename,
-                    storage.stream,
-                    metadata={'contentType': content_type}
-                )
-                return lookup
+            bucket.delete(found._id)
+            bucket.upload_from_stream_with_id(
+                file_id=found._id,
+                filename=filename,
+                source=storage.stream,
+                metadata=metadata,
+            )
 
-        return Lookup(bucket.upload_from_stream(
+            return lookup
+
+        if found and not overwrite:
+            filename, metadata['index'] = self._resolve_conflict(filename)
+
+        lookup = Lookup(filename)
+        lookup.oid = bucket.upload_from_stream(
             filename,
             storage.stream,
-            metadata={'contentType': content_type}
-        ))
+            metadata=metadata,
+        )
+
+        return lookup
