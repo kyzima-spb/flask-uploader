@@ -379,25 +379,6 @@ class S3Storage(AbstractStorage):
             self._url_pattern = url.replace(nbsp, '{key}')
         return self._url_pattern
 
-    @catch_client_error()
-    def iter_files(self) -> t.Iterable[File]:
-        if self.key_prefix is None:
-            objects = self.get_bucket().objects.all()
-        else:
-            objects = self.get_bucket().objects.filter(Prefix=self.key_prefix)
-
-        for obj in objects:
-            yield File(
-                lookup=self._make_lookup(obj.key),
-                path_or_file=self.get_url(obj.key),
-                filename=os.path.basename(obj.key),
-                mimetype=getattr(
-                    obj,
-                    'content_type',
-                    guess_type(obj.key, use_external=True)
-                )
-            )
-
     @catch_client_error(FileNotFound)
     def load(self, lookup: str) -> File:
         bucket = self.get_bucket()
@@ -438,3 +419,29 @@ class S3Storage(AbstractStorage):
         )
 
         return self._make_lookup(key)
+
+
+@catch_client_error()
+def iter_files(storage: S3Storage) -> t.Iterable[File]:
+    """
+    Returns an iterator over all files in the given S3 storage.
+
+    This function cannot be used in a production environment!
+    """
+
+    if storage.key_prefix is None:
+        objects = storage.get_bucket().objects.all()
+    else:
+        objects = storage.get_bucket().objects.filter(Prefix=storage.key_prefix)
+
+    for obj in objects:
+        yield File(
+            lookup=storage._make_lookup(obj.key),
+            path_or_file=storage.get_url(obj.key),
+            filename=os.path.basename(obj.key),
+            mimetype=getattr(
+                obj,
+                'content_type',
+                guess_type(obj.key, use_external=True)
+            )
+        )

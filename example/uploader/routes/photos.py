@@ -10,7 +10,7 @@ from flask import (
 )
 from flask_uploader import Uploader
 from flask_uploader.exceptions import UploadNotAllowed
-from flask_uploader.storages import FileSystemStorage
+from flask_uploader.storages import FileSystemStorage, iter_files
 from flask_uploader.validators import MimeTypeValidator
 
 
@@ -27,7 +27,11 @@ photos_uploader = Uploader(
 
 @bp.route('/')
 def index():
-    return render_template('list.html', uploader=photos_uploader)
+    return render_template(
+        'photos.html',
+        uploader=photos_uploader,
+        files=iter_files(photos_uploader.storage),
+    )
 
 
 @bp.route('/remove/<path:lookup>', methods=['POST'])
@@ -43,9 +47,9 @@ def upload():
         return redirect(request.url)
 
     try:
-        # photos_uploader.save(request.files['file'], overwrite=True)
-        photos_uploader.save(request.files['file'])
-        flash('File saved successfully.')
+        lookup = photos_uploader.save(request.files['file'], overwrite=True)
+        # lookup = photos_uploader.save(request.files['file'])
+        flash(f'Photo saved successfully - {lookup}.')
     except UploadNotAllowed as err:
         flash(str(err))
 

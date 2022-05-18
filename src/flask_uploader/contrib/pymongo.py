@@ -10,7 +10,6 @@ from gridfs.grid_file import GridOut
 from gridfs.errors import NoFile
 from pymongo import ASCENDING, DESCENDING
 from pymongo.client_session import ClientSession
-from pymongo.typings import _DocumentType
 from werkzeug.datastructures import FileStorage
 
 from ..exceptions import FileNotFound, InvalidLookup
@@ -129,15 +128,6 @@ class GridFSStorage(AbstractStorage):
         """Returns an object for working with GridFS."""
         return Bucket(self.mongo.db, self.collection)
 
-    def iter_files(self) -> t.Iterable[File]:
-        for grid_out in self.get_bucket().find():
-            yield File(
-                lookup=grid_out.filename,
-                path_or_file=t.cast(t.BinaryIO, grid_out),
-                filename=os.path.basename(grid_out.filename),
-                mimetype=grid_out.metadata['contentType'],
-            )
-
     def load(self, lookup: str) -> File:
         bucket = self.get_bucket()
         grid_out = bucket.find_last_version(lookup)
@@ -194,3 +184,20 @@ class GridFSStorage(AbstractStorage):
         )
 
         return lookup
+
+
+def iter_files(storage: GridFSStorage) -> t.Iterable[File]:
+    """
+    Returns an iterator over all files in the given GridFS storage.
+
+    This function cannot be used in a production environment
+    because it returns all files without any filtering.
+    This can lead to memory leaks and freezes.
+    """
+    for grid_out in storage.get_bucket().find():
+        yield File(
+            lookup=grid_out.filename,
+            path_or_file=t.cast(t.BinaryIO, grid_out),
+            filename=os.path.basename(grid_out.filename),
+            mimetype=grid_out.metadata['contentType'],
+        )

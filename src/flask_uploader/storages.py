@@ -147,10 +147,6 @@ class AbstractStorage(metaclass=ABCMeta):
         return None
 
     @abstractmethod
-    def iter_files(self) -> t.Iterable[File]:
-        """Returns an iterator over all files in the storage."""
-
-    @abstractmethod
     def load(self, lookup: str) -> File:
         """Reads and returns a ``File`` object for an identifier."""
 
@@ -193,20 +189,6 @@ class FileSystemStorage(AbstractStorage):
             raise RuntimeError(f'Not enough permissions to write to the directory {root_dir!r}.')
 
         return root_dir
-
-    def iter_files(self) -> t.Iterable[File]:
-        upload_dir = self.get_root_dir()
-
-        for root, dirs, files in os.walk(upload_dir):
-            for f in files:
-                path = os.path.abspath(os.path.join(root, f))
-                lookup = os.path.relpath(path, upload_dir)
-                yield File(
-                    lookup=lookup,
-                    path_or_file=path,
-                    filename=os.path.basename(lookup),
-                    mimetype=guess_type(lookup, use_external=True)
-                )
 
     def load(self, lookup: str) -> File:
         return File(
@@ -265,3 +247,25 @@ class FileSystemStorage(AbstractStorage):
         storage.save(path)
 
         return lookup
+
+
+def iter_files(storage: FileSystemStorage) -> t.Iterable[File]:
+    """
+    Returns an iterator over all files in the given file system storage.
+
+    This function cannot be used in a production environment
+    because it returns all files without any filtering.
+    This can lead to memory leaks and freezes.
+    """
+    upload_dir = storage.get_root_dir()
+
+    for root, dirs, files in os.walk(upload_dir):
+        for f in files:
+            path = os.path.abspath(os.path.join(root, f))
+            lookup = os.path.relpath(path, upload_dir)
+            yield File(
+                lookup=lookup,
+                path_or_file=path,
+                filename=os.path.basename(lookup),
+                mimetype=guess_type(lookup, use_external=True)
+            )

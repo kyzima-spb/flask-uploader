@@ -1,4 +1,4 @@
-{% macro render_files_grid(uploader) %}
+{% macro render_files_grid(files, uploader) %}
   <h2 class="mb-3">Uploaded files</h2>
   <table class="table table-striped align-middle">
     <tr>
@@ -7,7 +7,7 @@
       <th>Mime-Type</th>
       <th>Actions</th>
     </tr>
-    {% for f in uploader.iter_files() %}
+    {% for f in files %}
       <tr>
         <td>
           {% set url = uploader.get_url(f.lookup) %}
