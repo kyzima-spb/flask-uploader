@@ -3,7 +3,8 @@ import json
 
 SECRET_KEY = 'Very secret string'
 
-UPLOADER_ROOT_DIR = '/app/instance/upload'
+UPLOADER_ROOT_DIR = 'upload'
+UPLOADER_INSTANCE_RELATIVE_ROOT = True
 
 MONGO_URI = 'mongodb://user:demo@mongo/uploader?authSource=admin'
 

@@ -7,6 +7,7 @@ import typing as t
 from flask import current_app
 from werkzeug.datastructures import FileStorage
 
+from .exceptions import FileNotFound, PermissionDenied
 from .formats import guess_type
 from .utils import get_extension, md5stream, split_pairs
 
@@ -177,34 +178,46 @@ class FileSystemStorage(AbstractStorage):
         if os.path.isabs(self.dest):
             root_dir = self.dest
         else:
-            root_dir = os.path.join(
-                current_app.config['UPLOADER_ROOT_DIR'],
-                self.dest
-            )
+            config = current_app.config
+
+            if config['UPLOADER_INSTANCE_RELATIVE_ROOT']:
+                uploader_dir = os.path.join(
+                    current_app.instance_path, config['UPLOADER_ROOT_DIR']
+                )
+            else:
+                uploader_dir = config['UPLOADER_ROOT_DIR']
+
+            root_dir = os.path.join(uploader_dir, self.dest)
 
         if not os.path.isabs(root_dir):
-            raise RuntimeError('Relative path for uploading files is not allowed.')
+            raise PermissionDenied(
+                'Relative path for uploading files is not allowed.'
+            )
 
-        if not os.access(root_dir, os.W_OK):
-            raise RuntimeError(f'Not enough permissions to write to the directory {root_dir!r}.')
+        if not os.access(root_dir, os.R_OK | os.W_OK):
+            raise PermissionDenied(
+                f'Not enough permissions to read or write to the directory {root_dir!r}.'
+            )
 
         return root_dir
 
     def load(self, lookup: str) -> File:
+        path = os.path.join(self.get_root_dir(), lookup)
+
+        if not os.path.exists(path):
+            raise FileNotFound(f'File with path {lookup!r} not found.')
+
         return File(
             lookup=lookup,
-            path_or_file=os.path.join(self.get_root_dir(), lookup),
+            path_or_file=path,
             filename=os.path.basename(lookup),
             mimetype=guess_type(lookup)
         )
 
     def remove(self, lookup: str) -> None:
         path = os.path.join(self.get_root_dir(), lookup)
-
-        if not os.access(path, os.W_OK):
-            raise RuntimeError(f'Not enough permissions to delete the file {lookup!r}.')
-
-        os.remove(path)
+        if os.path.exists(path):
+            os.remove(path)
 
     def _resolve_conflict(self, path: str) -> str:
         """

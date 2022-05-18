@@ -410,7 +410,7 @@ class S3Storage(AbstractStorage):
         if not overwrite and self._object_exists(key):
             key = self._resolve_conflict(key)
 
-        content_type = guess_type(key, use_external=True) or 'application/octet-stream'
+        content_type = guess_type(key, use_external=True) or storage.mimetype
 
         bucket.put_object(
             Key=key,
