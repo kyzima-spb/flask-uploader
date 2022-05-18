@@ -10,4 +10,4 @@ services:
       - 8000:8000
     volumes:
       - ./source:/docs/source
-      - ../flask_uploader:/python_packages/flask_uploader:ro
+      - ../src/flask_uploader:/python_packages/flask_uploader:ro
