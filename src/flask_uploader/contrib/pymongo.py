@@ -5,9 +5,12 @@ import typing as t
 from bson.errors import InvalidId
 from bson.objectid import ObjectId
 from flask_pymongo import PyMongo
-from gridfs import GridFSBucket, GridOut, NoFile
+from gridfs import GridFSBucket
+from gridfs.grid_file import GridOut
+from gridfs.errors import NoFile
 from pymongo import ASCENDING, DESCENDING
 from pymongo.client_session import ClientSession
+from pymongo.typings import _DocumentType
 from werkzeug.datastructures import FileStorage
 
 from ..exceptions import FileNotFound, InvalidLookup
@@ -24,7 +27,9 @@ __all__ = ('GridFSStorage', 'Lookup')
 
 class Bucket(GridFSBucket):
     def delete_file(
-        self, filename: str, session: t.Optional[ClientSession] = None
+        self,
+        filename: str,
+        session: t.Optional[ClientSession] = None  # type: ignore
     ) -> None:
         """Removes all versions of a file with the given name."""
         cursor = self.find({'filename': filename}).sort('uploadDate', ASCENDING)
@@ -32,7 +37,9 @@ class Bucket(GridFSBucket):
             self.delete(grid_out._id, session=session)
 
     def find_last_version(
-        self, filename: str, session: t.Optional[ClientSession] = None
+        self,
+        filename: str,
+        session: t.Optional[ClientSession] = None  # type: ignore
     ) -> t.Optional[GridOut]:
         """
         Returns the last uploaded version of the file with the given name or None.
@@ -56,7 +63,7 @@ class Bucket(GridFSBucket):
                     .sort('metadata.index', DESCENDING)
                     .limit(1)
             )
-            return found.metadata['index']
+            return int(found.metadata['index'])
         except StopIteration:
             return 0
 
@@ -69,17 +76,17 @@ class Lookup(str):
     def __init__(self, value: str) -> None:
         self._oid: t.Optional[ObjectId] = None
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return '<{} filename={!r} oid={!r}>'.format(
             self.__class__.__name__, str(self), self.oid
         )
 
     @property
-    def oid(self):
+    def oid(self) -> t.Optional[ObjectId]:
         return self._oid
 
     @oid.setter
-    def oid(self, value):
+    def oid(self, value: t.Union[str, ObjectId]) -> None:
         if not isinstance(value, ObjectId):
             try:
                 value = ObjectId(value)
@@ -145,7 +152,7 @@ class GridFSStorage(AbstractStorage):
             lookup=lookup,
             path_or_file=t.cast(t.BinaryIO, grid_out),
             filename=os.path.basename(grid_out.filename),
-            mimetype=grid_out.metadata['contentType'],
+            mimetype=grid_out.metadata['contentType'],  # type: ignore
         )
 
     def remove(self, lookup: str) -> None:
@@ -154,13 +161,14 @@ class GridFSStorage(AbstractStorage):
     def save(self, storage: FileStorage, overwrite: bool = False) -> Lookup:
         bucket = self.get_bucket()
         filename = self.filename_strategy(storage)
-        metadata = {
+        metadata: dict[str, t.Any] = {
             'contentType': guess_type(filename, use_external=True) or storage.mimetype,
         }
         found = bucket.find_last_version(filename)
 
         if found and overwrite:
-            metadata.update(found.metadata)
+            if found.metadata is not None:
+                metadata.update()
 
             lookup = Lookup(filename)
             lookup.oid = found._id
