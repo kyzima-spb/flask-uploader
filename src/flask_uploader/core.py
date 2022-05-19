@@ -107,6 +107,11 @@ class Uploader(metaclass=UploaderMeta):
         self._endpoint = endpoint
         self.use_auto_route = use_auto_route
 
+    def __repr__(self) -> str:
+        return '<{} name={!r}>'.format(
+            self.__class__.__name__, self.name
+        )
+
     def get_url(self, lookup: str, external: bool = True) -> str:
         """
         Returns the URL to the given file.

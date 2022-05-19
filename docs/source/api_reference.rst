@@ -8,15 +8,11 @@ Core Reference
 
 .. autofunction:: flask_uploader.init_uploader
 
-.. autoclass:: flask_uploader.UploaderMeta
+.. autoclass:: flask_uploader.core.UploaderMeta
     :members:
     :show-inheritance:
 
-.. autoclass:: flask_uploader.Uploader
-    :members:
-    :show-inheritance:
-
-.. autoclass:: flask_uploader.DownloadView
+.. autoclass:: flask_uploader.core.Uploader
     :members:
     :show-inheritance:
 
@@ -98,5 +94,24 @@ Validators Reference
     :show-inheritance:
 
 .. autoclass:: flask_uploader.validators.MimeTypeValidator
+    :members:
+    :show-inheritance:
+
+Views Reference
+---------------
+
+.. autoclass:: flask_uploader.views.BaseView
+    :members:
+    :show-inheritance:
+
+.. autoclass:: flask_uploader.views.DestroyView
+    :members:
+    :show-inheritance:
+
+.. autoclass:: flask_uploader.views.DownloadView
+    :members:
+    :show-inheritance:
+
+.. autoclass:: flask_uploader.views.UploaderMixin
     :members:
     :show-inheritance:
