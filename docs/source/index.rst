@@ -59,6 +59,9 @@ Flask-Uploader
                                              Должна существовать и иметь права на запись.
                                              По-умолчанию ``''``, но обязательна для
                                              :py:class:`~flask_uploader.storages.FileSystemStorage`.
+`UPLOADER_INSTANCE_RELATIVE_ROOT`            Если истина, то ``UPLOADER_ROOT_DIR`` может быть задан
+                                             как относительный путь от корня директории экземпляра.
+                                             По-умолчанию ``False``.
 `UPLOADER_BLUEPRINT_NAME`                    Программное имя, используемое
                                              :ref:`внутренним Blueprint <Доступ к файлу>`.
                                              По-умолчанию ``_uploader``.
@@ -234,6 +237,7 @@ Flask-Uploader
     from flask_uploader import Uploader
     from flask_uploader.storages import FileSystemStorage
     from flask_uploader.validators import MimeTypeValidator
+    from flask_uploader.views import DownloadView
 
 
     bp = Blueprint('invoices', __name__, url_prefix='/invoices')
@@ -250,20 +254,14 @@ Flask-Uploader
     )
 
 
-    @bp.route('/<path:lookup>')
-    @login_required
-    def download(lookup):
-        try:
-            file = invoices_uploader.load(lookup)
+    class DownloadInvoiceView(DownloadView):
+        decorators = [login_required]
+        uploader_or_name = invoices_uploader
 
-            return send_file(
-                path_or_file=file.path_or_file,
-                attachment_filename=file.filename,
-                mimetype=file.mimetype,
-                as_attachment=True,
-            )
-        except RuntimeError:
-            abort(404)
+
+    download_endpoint = DownloadInvoiceView.as_view('download')
+
+    bp.add_url_rule('/<path:lookup>', view_func=download_endpoint)
 
 Промежуточное ПО
 ~~~~~~~~~~~~~~~~
@@ -304,7 +302,10 @@ Flask-Uploader
 
     # Part of the virtual host configuration file
 
-    location ~ /photos/(.+) {
+    client_max_body_size 100m;
+
+    location /media/photos/ {
+        rewrite ^/media/(.*)$ /$1 break;
         root /path/to/uploader_root_dir;
     }
 
