@@ -10,6 +10,6 @@ RUN pip install -q \
         --no-cache-dir \
         --disable-pip-version-check \
         --extra-index-url=https://test.pypi.org/simple \
-        flask-uploader flask-uploader[pymongo] flask-uploader[aws]
+        flask-uploader[dev]
 
 ADD ./ /app

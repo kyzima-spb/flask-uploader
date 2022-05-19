@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% import 'macros.html' as macro %}
+
+{% block main %}
+  <div class="row">
+    <div class="col">
+      <h1 class="my-4"></h1>
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col">
+      <form method="post" enctype="multipart/form-data">
+        <div class="mb-3">
+          <input class="form-control" type="file" name="file">
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col">
+      {{ macro.render_files_grid(files, uploader) }}
+    </div>
+  </div>
+{% endblock main %}
