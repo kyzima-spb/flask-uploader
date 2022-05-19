@@ -114,7 +114,7 @@ class GridFSStorage(AbstractStorage):
         self.mongo = mongo
         self.collection = collection
 
-    def _resolve_conflict(self, filename: str) -> tuple[str, int]:
+    def _resolve_conflict(self, filename: str) -> t.Tuple[str, int]:
         """
         If a file with the name already exists in the GridFS,
         this method is called to resolve the conflict.
@@ -151,7 +151,7 @@ class GridFSStorage(AbstractStorage):
     def save(self, storage: FileStorage, overwrite: bool = False) -> Lookup:
         bucket = self.get_bucket()
         filename = self.filename_strategy(storage)
-        metadata: dict[str, t.Any] = {
+        metadata: t.Dict[str, t.Any] = {
             'contentType': guess_type(filename, use_external=True) or storage.mimetype,
         }
         found = bucket.find_last_version(filename)

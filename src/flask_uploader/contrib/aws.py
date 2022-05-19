@@ -316,11 +316,8 @@ class S3Storage(AbstractStorage):
         if self.key_prefix is None:
             return key
 
-        if hasattr(key, 'removeprefix'):
-            return key.removeprefix(self.key_prefix)
-
         if key.startswith(self.key_prefix):
-            return self.key_prefix[len(self.key_prefix):]
+            return key[len(self.key_prefix):]
 
         return key
 
