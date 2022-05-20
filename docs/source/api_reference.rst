@@ -115,3 +115,37 @@ Views Reference
 .. autoclass:: flask_uploader.views.UploaderMixin
     :members:
     :show-inheritance:
+
+Contrib Reference
+-----------------
+
+GridFS Reference
+~~~~~~~~~~~~~~~~
+
+.. autofunction:: flask_uploader.contrib.pymongo.iter_files
+
+.. autoclass:: flask_uploader.contrib.pymongo.Bucket
+    :members:
+    :show-inheritance:
+
+.. autoclass:: flask_uploader.contrib.pymongo.Lookup
+    :members:
+    :show-inheritance:
+
+.. autoclass:: flask_uploader.contrib.pymongo.GridFSStorage
+    :members:
+    :show-inheritance:
+
+Amazon Reference
+~~~~~~~~~~~~~~~~
+
+.. autofunction:: flask_uploader.contrib.aws.iter_files
+.. autofunction:: flask_uploader.contrib.aws.catch_client_error
+
+.. autoclass:: flask_uploader.contrib.aws.AWS
+    :members:
+    :show-inheritance:
+
+.. autoclass:: flask_uploader.contrib.aws.S3Storage
+    :members:
+    :show-inheritance:

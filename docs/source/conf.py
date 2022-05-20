@@ -116,4 +116,6 @@ intersphinx_mapping = {
     'flask_uploads': ('https://pythonhosted.org/Flask-Uploads/', None),
     'flask_pymongo': ('https://flask-pymongo.readthedocs.io/en/latest/', None),
     'gridfs': ('https://pymongo.readthedocs.io/en/stable/api/gridfs/', None),
+    'boto3': ('https://boto3.amazonaws.com/v1/documentation/api/latest/index.html', None),
+    'pymongo': ('https://pymongo.readthedocs.io/en/stable/', None),
 }

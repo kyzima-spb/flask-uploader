@@ -15,4 +15,3 @@ with open('/run/secrets/aws_credentials') as f:
 
 AWS_REGION_NAME = 'ru-central1'
 AWS_ENDPOINT_URL = 'https://storage.yandexcloud.net'
-# AWS_S3_ENDPOINT_URL = 'https://storage.yandexcloud.net'
