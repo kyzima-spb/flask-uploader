@@ -150,7 +150,7 @@ class GridFSStorage(AbstractStorage):
 
     def save(self, storage: FileStorage, overwrite: bool = False) -> Lookup:
         bucket = self.get_bucket()
-        filename = self.filename_strategy(storage)
+        filename = self.generate_filename(storage)
         metadata: t.Dict[str, t.Any] = {
             'contentType': guess_type(filename, use_external=True) or storage.mimetype,
         }

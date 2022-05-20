@@ -401,7 +401,7 @@ class S3Storage(AbstractStorage):
     def save(self, storage: FileStorage, overwrite: bool = False) -> str:
         bucket = self.get_bucket()
         key = self._make_key(
-            self.filename_strategy(storage)
+            self.generate_filename(storage)
         )
 
         if not overwrite and self._object_exists(key):

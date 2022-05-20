@@ -7,7 +7,11 @@ import typing as t
 from flask import current_app
 from werkzeug.datastructures import FileStorage
 
-from .exceptions import FileNotFound, PermissionDenied
+from .exceptions import (
+    FileNotFound,
+    InvalidLookup,
+    PermissionDenied,
+)
 from .formats import guess_type
 from .utils import get_extension, md5stream, split_pairs
 
@@ -20,14 +24,6 @@ __all__ = (
     'TFilenameStrategy',
     'TimestampStrategy',
 )
-
-# from werkzeug.utils import secure_filename
-#
-#
-# def original_filename(storage: FileStorage) -> str:
-#     # Non-ASCII characters will be removed
-#     # For filename '天安门.jpg' returns 'jpg'
-#     return secure_filename(storage.filename) if storage.filename else ''
 
 
 TFilenameStrategy = t.Callable[[FileStorage], str]
@@ -132,6 +128,15 @@ class AbstractStorage(metaclass=ABCMeta):
         if filename_strategy is None:
             filename_strategy = HashedFilenameStrategy()
         self.filename_strategy = filename_strategy
+
+    def generate_filename(self, storage: FileStorage) -> str:
+        """Returns the name of the file to save."""
+        filename = self.filename_strategy(storage)
+
+        if not filename:
+            raise InvalidLookup('The filename cannot be empty.')
+
+        return filename
 
     def get_url(self, lookup: str) -> t.Optional[str]:
         """
@@ -249,7 +254,7 @@ class FileSystemStorage(AbstractStorage):
 
     def save(self, storage: FileStorage, overwrite: bool = False) -> str:
         root_dir = self.get_root_dir()
-        lookup = self.filename_strategy(storage)
+        lookup = self.generate_filename(storage)
         path = os.path.join(root_dir, lookup)
 
         if not overwrite and os.path.exists(path):

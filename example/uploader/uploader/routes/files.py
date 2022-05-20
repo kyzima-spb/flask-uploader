@@ -65,7 +65,5 @@ def upload():
         flash(f'File saved successfully - {lookup}.')
     except UploadNotAllowed as err:
         flash(str(err))
-    except UploaderException as err:
-        abort(500, str(err))
 
     return redirect(request.url)
