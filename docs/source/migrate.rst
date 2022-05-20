@@ -64,7 +64,7 @@
         url = photos.url(photo.filename)
         return render_template('show.html', url=url, photo=photo)
 
-Вот так этот пример может быть переписан с использованием ``Flask-Uploads``:
+Вот так этот пример может быть переписан с использованием ``Flask-Uploader``:
 
 .. code-block:: python
 

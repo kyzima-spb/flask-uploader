@@ -266,37 +266,9 @@ Flask-Uploader
 Промежуточное ПО
 ~~~~~~~~~~~~~~~~
 
-Чтобы отдавать загруженные файлы, используя промежуточное ПО, например Nginx,
-зарегистрируйте конечную точку как ``build_only``,
-чтобы :py:func:`~flask.url_for` работал без функции просмотра.
-
-.. code-block:: python
-
-    # Module with endpoint handlers, for example - routes/photos.py
-
-    from flask import Blueprint
-    from flask_uploader import Uploader
-    from flask_uploader.storages import FileSystemStorage
-    from flask_uploader.validators import ExtensionValidator
-
-
-    bp = Blueprint('photos', __name__, url_prefix='/photos')
-
-    photos_uploader = Uploader(
-        'photos',
-        FileSystemStorage(dest='photos'),
-        endpoint='photos.download',
-        validators=[
-            ExtensionValidator(
-                ExtensionValidator.IMAGES
-            ),
-        ]
-    )
-
-
-    bp.add_url_rule('/<path:lookup>', endpoint='download', build_only=True)
-
-А затем в конфигурационном файла виртуального хоста добавьте следующее правило:
+Чтобы отдать загруженные файлы, используя промежуточное ПО, например Nginx_,
+в конфигурационном файле вирутального хоста определите новое правило (``location``),
+которое перекрывает маршрут по-умолчанию:
 
 .. code-block:: nginx
 
@@ -328,3 +300,4 @@ Flask-Uploader
 .. _test.pypi.org: https://test.pypi.org/project/flask-uploader/
 .. _правилами разработки расширений: https://flask.palletsprojects.com/en/2.1.x/extensiondev/#initializing-extensions
 .. _фабричная функция: https://flask.palletsprojects.com/en/2.1.x/patterns/appfactories/
+.. _Nginx: https://nginx.org
