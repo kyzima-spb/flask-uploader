@@ -1,4 +1,5 @@
 from __future__ import annotations
+import re
 import typing as t
 
 from PIL import Image, UnidentifiedImageError
@@ -11,7 +12,9 @@ from .utils import get_extension
 
 __all__ = (
     'ExtensionValidator',
-    'ImageSizeValidator',
+    'FileRequired',
+    'FileSize',
+    'ImageSize',
     'MimeTypeValidator',
     'TValidator',
 )
@@ -149,7 +152,69 @@ class MimeTypeValidator:
             raise ValidationError('This file type is not allowed to be uploaded.')
 
 
-class ImageSizeValidator:
+class FileRequired:
+    """
+    The validator checks that the file has been selected and submitted.
+    """
+
+    def __call__(self, storage: FileStorage) -> None:
+        if not storage.filename:
+            raise ValidationError(f'The file "{storage.name}" is required.')
+
+
+class FileSize:
+    """
+    The validator checks that the file size is not larger than the given.
+    """
+
+    _units = ('b', 'k', 'm', 'g', 't', 'p')
+
+    def __init__(self, max_size: t.Union[float, str]) -> None:
+        """
+        Arguments:
+            max_size (float|str):
+                The maximum file size.
+                Can be an integer number of bytes, or a string with a size suffix:
+                b, k, m, g, t, p.
+                For example: 512m or 512Mb
+        """
+        if isinstance(max_size, str):
+            max_size = self.to_bytes(max_size)
+        self.max_size = max_size
+
+    def __call__(self, storage: FileStorage) -> None:
+        storage.stream.seek(0, 2)
+        size = storage.stream.tell()
+        storage.stream.seek(0)
+
+        if size > self.max_size:
+            raise ValidationError(
+                f'The size of the uploaded file cannot be more than {self.to_human()}.'
+            )
+
+    def to_bytes(self, max_size: str) -> float:
+        """Returns the maximum file size in bytes from a human readable string."""
+        match = re.search(r'^(\d+(?:\.\d+)?)([kmgtp])b?$', max_size, re.I)
+
+        if match is None:
+            raise ValueError(f'Valid value is number with unit: {self._units}')
+
+        k = self._units.index(match.group(2).lower())
+        value = float(match.group(1))
+
+        return value * 1024.0 ** k
+
+    def to_human(self) -> str:
+        """Returns the maximum file size in human readable format."""
+        for k, unit in enumerate(self._units):
+            value = self.max_size / 1024 ** k
+            if value < 1024:
+                unit = f'{unit}b' if k > 0 else unit
+                return f'{value:3.1f}{unit.title()}'
+        return f'{self.max_size:3.1f}'
+
+
+class ImageSize:
     def __init__(
         self,
         min_width: t.Optional[int] = None,
@@ -179,7 +244,7 @@ class ImageSizeValidator:
         self.validate_image(image)
         storage.stream.seek(0)
 
-    def validate_image(self, image: Image) -> None:
+    def validate_image(self, image: Image.Image) -> None:
         width, height = image.size
 
         if self.min_width is not None and width < self.min_width:
@@ -201,8 +266,3 @@ class ImageSizeValidator:
             raise ValidationError(
                 f'The image height must be less than or equal to {self.max_height}px.'
             )
-
-
-# def required_filename(storage: FileStorage) -> None:
-#     if not storage.filename:
-#         raise ValidationError('Filename is required.')
