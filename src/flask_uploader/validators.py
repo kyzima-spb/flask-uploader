@@ -1,7 +1,7 @@
 from __future__ import annotations
 import typing as t
 
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 from werkzeug.datastructures import FileStorage
 
 from . import formats
@@ -150,20 +150,56 @@ class MimeTypeValidator:
 
 
 class ImageSizeValidator:
-    def __init__(self, width: int, height: int) -> None:
-        self.width = width
-        self.height = height
+    def __init__(
+        self,
+        min_width: t.Optional[int] = None,
+        min_height: t.Optional[int] = None,
+        max_width: t.Optional[int] = None,
+        max_height: t.Optional[int] = None,
+    ) -> None:
+        if min_width is not None and max_width is not None:
+            if min_width > max_width:
+                raise ValueError('The minimum width must be less than the maximum.')
+
+        if min_height is not None and max_height is not None:
+            if min_height > max_height:
+                raise ValueError('The minimum height must be less than the maximum.')
+
+        self.min_width = min_width
+        self.min_height = min_height
+        self.max_width = max_width
+        self.max_height = max_height
 
     def __call__(self, storage: FileStorage) -> None:
-        image = Image.open(storage.stream)
-        width, height = image.size
+        try:
+            image = Image.open(storage.stream)
+        except UnidentifiedImageError as err:
+            raise ValidationError('Unsupported image type.') from err
+
+        self.validate_image(image)
         storage.stream.seek(0)
 
-        if self.width < width or self.height < height:
+    def validate_image(self, image: Image) -> None:
+        width, height = image.size
+
+        if self.min_width is not None and width < self.min_width:
             raise ValidationError(
-                'The image size is larger than %dx%d.' % (
-                    self.width, self.height
-                )
+                f'The width of the image must be greater than or equal to {self.min_width}px.'
+            )
+
+        if self.max_width is not None and width > self.max_width:
+            raise ValidationError(
+                f'The image width must be less than or equal to {self.max_width}px.'
+            )
+
+        if self.min_height is not None and height < self.min_height:
+            raise ValidationError(
+                f'The height of the image must be greater than or equal to {self.min_height}px.'
+            )
+
+        if self.max_height is not None and height > self.max_height:
+            raise ValidationError(
+                f'The image height must be less than or equal to {self.max_height}px.'
             )
 
 

@@ -11,7 +11,7 @@ from flask import (
 from flask_uploader import Uploader
 from flask_uploader.exceptions import UploadNotAllowed
 from flask_uploader.storages import FileSystemStorage, iter_files
-from flask_uploader.validators import MimeTypeValidator
+from flask_uploader.validators import MimeTypeValidator, ImageSizeValidator
 
 
 bp = Blueprint('photos', __name__, url_prefix='/photos')
@@ -21,6 +21,7 @@ photos_uploader = Uploader(
     FileSystemStorage(dest='photos'),
     validators=[
         MimeTypeValidator(MimeTypeValidator.IMAGES),
+        ImageSizeValidator(max_width=1920, max_height=1080),
     ]
 )
 

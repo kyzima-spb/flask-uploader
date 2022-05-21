@@ -17,6 +17,7 @@ setup(
     extras_require={
         'aws': aws_requires,
         'dev': [
+            'pytest>=7.1',
             'boto3-stubs-lite[s3]',
             'mypy>=0.950',
             'types-pillow',
