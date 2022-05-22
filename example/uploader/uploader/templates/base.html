@@ -47,11 +47,31 @@
               S3
             </a>
           </li>
+          {% if current_user.is_authenticated %}
+            <li class="nav-item">
+              <a
+                class="nav-link {% if request.endpoint == 'site.invoices.index' %}active{% endif %}"
+                aria-current="page"
+                href="{{ url_for('site.invoices.index') }}"
+              >
+                Invoices
+              </a>
+            </li>
+          {% endif %}
         </ul>
-{#        <form class="d-flex">#}
-{#          <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">#}
-{#          <button class="btn btn-outline-success" type="submit">Search</button>#}
-{#        </form>#}
+        {% if current_user.is_authenticated %}
+          <span class="navbar-text me-2">
+            {{ current_user.username }}
+          </span>
+          <a class="btn btn-outline-success" href="{{ url_for('site.auth.logout') }}">Logout</a>
+        {% else %}
+          <form class="d-flex" action="{{ url_for('site.auth.login') }}" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input name="username" class="form-control me-2" type="text" placeholder="Username">
+            <input name="password" class="form-control me-2" type="password" placeholder="Password">
+            <button class="btn btn-outline-success" type="submit">Login</button>
+          </form>
+        {% endif %}
       </div>
     </div>
   </nav>

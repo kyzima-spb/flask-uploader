@@ -2,14 +2,15 @@ from flask import Flask
 from flask_uploader import init_uploader
 
 from . import routes
-from .routes.books import mongo
-from .routes.files import aws
+from .extensions import csrf, login_manager, mongo, aws
 
 
 def create_app():
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_pyfile('config.py')
 
+    csrf.init_app(app)
+    login_manager.init_app(app)
     mongo.init_app(app)
     aws.init_app(app)
     init_uploader(app)

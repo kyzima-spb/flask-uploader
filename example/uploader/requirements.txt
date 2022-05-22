@@ -7,6 +7,7 @@ click==8.0.3
 dnspython==2.2.1
 email-validator==1.2.1
 Flask==2.0.2
+Flask-Login==0.6.1
 flask-mongoengine==1.0.0
 Flask-PyMongo==2.3.0
 Flask-WTF==1.0.1

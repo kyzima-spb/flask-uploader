@@ -11,7 +11,6 @@ from flask import (
 )
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileRequired
-from flask_pymongo import PyMongo
 from flask_uploader import Uploader
 from flask_uploader.contrib.pymongo import GridFSStorage, Lookup, iter_files
 from flask_uploader.exceptions import UploaderException, UploadNotAllowed
@@ -19,8 +18,8 @@ from flask_uploader.validators import MimeType
 from wtforms import fields
 from wtforms import validators
 
+from ..extensions import mongo
 
-mongo = PyMongo()
 
 bp = Blueprint('books', __name__, url_prefix='/books')
 

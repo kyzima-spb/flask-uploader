@@ -5,10 +5,15 @@ from flask import (
     redirect,
     request,
 )
+from flask_login import login_required
 from flask_uploader import Uploader
 from flask_uploader.exceptions import UploadNotAllowed
-from flask_uploader.storages import FileSystemStorage, iter_files
-from flask_uploader.validators import MimeType
+from flask_uploader.storages import (
+    FileSystemStorage,
+    iter_files,
+    TimestampStrategy
+)
+from flask_uploader.validators import Extension
 from flask_uploader.views import (
     BaseView,
     DestroyView,
@@ -20,17 +25,28 @@ bp = Blueprint('invoices', __name__, url_prefix='/invoices')
 
 invoices_uploader = Uploader(
     'invoices',
-    FileSystemStorage(dest='invoices'),
+    FileSystemStorage(dest='invoices', filename_strategy=TimestampStrategy()),
     endpoint='site.invoices.download',
     validators=[
-        MimeType(
-            MimeType.OFFICE
+        Extension(
+            Extension.OFFICE
         ),
     ]
 )
 
 
-class UploaderView(BaseView):
+class DeleteInvoiceView(DestroyView):
+    decorators = [login_required]
+    uploader_or_name = invoices_uploader
+
+
+class DownloadInvoiceView(DownloadView):
+    decorators = [login_required]
+    uploader_or_name = invoices_uploader
+
+
+class UploadInvoiceView(BaseView):
+    decorators = [login_required]
     uploader_or_name = invoices_uploader
 
     def get(self):
@@ -56,10 +72,10 @@ class UploaderView(BaseView):
         return redirect(request.url)
 
 
-uploader_endpoint = UploaderView.as_view('index')
-download_endpoint = DownloadView.as_view('download', uploader_or_name=invoices_uploader)
-delete_endpoint = DestroyView.as_view('remove', uploader_or_name=invoices_uploader)
+download_endpoint = DownloadInvoiceView.as_view('download')
+upload_endpoint = UploadInvoiceView.as_view('index')
+delete_endpoint = DeleteInvoiceView.as_view('remove')
 
-bp.add_url_rule('/', view_func=uploader_endpoint)
+bp.add_url_rule('/', view_func=upload_endpoint)
 bp.add_url_rule('/<path:lookup>', view_func=download_endpoint)
 bp.add_url_rule('/remove/<path:lookup>', view_func=delete_endpoint)

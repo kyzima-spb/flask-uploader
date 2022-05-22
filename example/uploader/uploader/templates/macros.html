@@ -1,26 +1,29 @@
 {% macro render_files_grid(files, uploader) %}
   <h2 class="mb-3">Uploaded files</h2>
-  <table class="table table-striped align-middle">
-    <tr>
-      <th>URL</th>
-      <th>Filename</th>
-      <th>Mime-Type</th>
-      <th>Actions</th>
-    </tr>
-    {% for f in files %}
+  <div class="table-responsive">
+    <table class="table table-striped align-middle">
       <tr>
-        <td>
-          {% set url = uploader.get_url(f.lookup) %}
-          <a href="{{ url }}">{{ url }}</a>
-        </td>
-        <td>{{ f.filename }}</td>
-        <td>{{ f.mimetype }}</td>
-        <td>
-          <form action="{{ url_for('.remove', lookup=f.lookup) }}" method="post">
-            <button type="submit" class="btn btn-danger">Delete</button>
-          </form>
-        </td>
+        <th>URL</th>
+        <th>Filename</th>
+        <th>Mime-Type</th>
+        <th>Actions</th>
       </tr>
-    {% endfor %}
-  </table>
+      {% for f in files %}
+        <tr>
+          <td>
+            {% set url = uploader.get_url(f.lookup) %}
+            <a href="{{ url }}">{{ url }}</a>
+          </td>
+          <td>{{ f.filename }}</td>
+          <td>{{ f.mimetype }}</td>
+          <td>
+            <form action="{{ url_for('.remove', lookup=f.lookup) }}" method="post">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+    </table>
+  </div>
 {% endmacro %}

@@ -13,8 +13,9 @@ from flask_uploader import Uploader
 from flask_uploader.exceptions import UploaderException, UploadNotAllowed
 from flask_uploader.contrib.aws import AWS, S3Storage, iter_files
 
-
 from werkzeug.utils import secure_filename
+
+from ..extensions import aws
 
 
 def original_filename(storage) -> str:
@@ -25,7 +26,6 @@ def original_filename(storage) -> str:
 
 bp = Blueprint('files', __name__, url_prefix='/files')
 
-aws = AWS()
 files_uploader = Uploader(
     'files',
     S3Storage(

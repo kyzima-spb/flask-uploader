@@ -11,6 +11,7 @@
   <div class="row mb-4">
     <div class="col">
       <form method="post" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="mb-3">
           <input class="form-control" type="file" name="file">
         </div>
