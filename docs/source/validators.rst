@@ -53,7 +53,7 @@
 .. code-block:: python
 
     from flask_uploader import Uploader
-    from flask_uploader.validators import MimeTypeValidator
+    from flask_uploader.validators import MimeType
     from PIL import Image
     from werkzeug.datastructures import FileStorage
 
@@ -79,7 +79,7 @@
         'photos',
         FileSystemStorage(dest='photos'),
         validators=[
-            MimeTypeValidator(MimeTypeValidator.IMAGES),
+            MimeType(MimeType.IMAGES),
             ImageSizeValidator(1024, 1024),
         ]
     )

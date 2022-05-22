@@ -236,7 +236,7 @@ Flask-Uploader
     from flask_login import login_required
     from flask_uploader import Uploader
     from flask_uploader.storages import FileSystemStorage
-    from flask_uploader.validators import MimeTypeValidator
+    from flask_uploader.validators import MimeType
     from flask_uploader.views import DownloadView
 
 
@@ -247,8 +247,8 @@ Flask-Uploader
         FileSystemStorage(dest='invoices'),
         endpoint='invoices.download',
         validators=[
-            MimeTypeValidator(
-                MimeTypeValidator.OFFICE
+            MimeType(
+                MimeType.OFFICE
             ),
         ]
     )

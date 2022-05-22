@@ -8,7 +8,7 @@ from flask import (
 from flask_uploader import Uploader
 from flask_uploader.exceptions import UploadNotAllowed
 from flask_uploader.storages import FileSystemStorage, iter_files
-from flask_uploader.validators import MimeTypeValidator
+from flask_uploader.validators import MimeType
 from flask_uploader.views import (
     BaseView,
     DestroyView,
@@ -23,8 +23,8 @@ invoices_uploader = Uploader(
     FileSystemStorage(dest='invoices'),
     endpoint='site.invoices.download',
     validators=[
-        MimeTypeValidator(
-            MimeTypeValidator.OFFICE
+        MimeType(
+            MimeType.OFFICE
         ),
     ]
 )

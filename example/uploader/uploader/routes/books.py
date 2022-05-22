@@ -15,7 +15,7 @@ from flask_pymongo import PyMongo
 from flask_uploader import Uploader
 from flask_uploader.contrib.pymongo import GridFSStorage, Lookup, iter_files
 from flask_uploader.exceptions import UploaderException, UploadNotAllowed
-from flask_uploader.validators import MimeTypeValidator
+from flask_uploader.validators import MimeType
 from wtforms import fields
 from wtforms import validators
 
@@ -28,7 +28,7 @@ books_uploader = Uploader(
     'books',
     GridFSStorage(mongo, 'books'),
     validators=[
-        MimeTypeValidator(MimeTypeValidator.BOOKS),
+        MimeType(MimeType.BOOKS),
     ]
 )
 

@@ -81,7 +81,7 @@ Utils Reference
 Validators Reference
 --------------------
 
-.. autoclass:: flask_uploader.validators.ExtensionValidator
+.. autoclass:: flask_uploader.validators.Extension
     :members:
     :show-inheritance:
 
@@ -97,7 +97,7 @@ Validators Reference
     :members:
     :show-inheritance:
 
-.. autoclass:: flask_uploader.validators.MimeTypeValidator
+.. autoclass:: flask_uploader.validators.MimeType
     :members:
     :show-inheritance:
 
