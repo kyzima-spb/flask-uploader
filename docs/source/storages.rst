@@ -125,6 +125,22 @@ Mongodb GridFS
 вызывается с аргументом ``overwrite`` равным ``True``, то существующий файл удаляется
 и создается новый с точно таким же первичным ключом.
 
+ObjectId
+~~~~~~~~
+
+Метод :py:meth:`~flask_uploader.contrib.pymongo.GridFSStorage.save` возвращает не обычную строку,
+а специальный тип :py:class:`~flask_uploader.contrib.pymongo.Lookup`, унаследованный от :py:class:`str`.
+
+Чтобы получить идентификатор сохраненного файла, обратитесь к свойству ``oid``:
+
+.. code-block:: python
+
+    lookup = books_uploader.save(request.files['file'], overwrite=True)
+    mongo.db.books.insert_one({
+        'title': request.form['title'],
+        'file': lookup.oid,
+    })
+
 Amazon S3
 ---------
 

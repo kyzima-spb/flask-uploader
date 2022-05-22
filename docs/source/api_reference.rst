@@ -81,19 +81,27 @@ Utils Reference
 Validators Reference
 --------------------
 
-.. autoclass:: flask_uploader.validators.ValidationError
-    :members:
-    :show-inheritance:
-
-.. autoclass:: flask_uploader.validators.TValidator
-    :members:
-    :show-inheritance:
-
 .. autoclass:: flask_uploader.validators.ExtensionValidator
     :members:
     :show-inheritance:
 
+.. autoclass:: flask_uploader.validators.FileRequired
+    :members:
+    :show-inheritance:
+
+.. autoclass:: flask_uploader.validators.FileSize
+    :members:
+    :show-inheritance:
+
+.. autoclass:: flask_uploader.validators.ImageSize
+    :members:
+    :show-inheritance:
+
 .. autoclass:: flask_uploader.validators.MimeTypeValidator
+    :members:
+    :show-inheritance:
+
+.. autoclass:: flask_uploader.validators.TValidator
     :members:
     :show-inheritance:
 
