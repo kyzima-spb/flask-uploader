@@ -69,6 +69,7 @@ class UploaderField(FileField):  # type: ignore
         validators: t.Optional[t.List[_WTFValidator]] = None,
         *,
         uploader: Uploader,
+        overwrite: bool = False,
         return_url: bool = False,
         external: bool = False,
         **kwargs: t.Any,
@@ -83,15 +84,32 @@ class UploaderField(FileField):  # type: ignore
                 A sequence of validators to call when `validate` is called.
             uploader (Uploader):
                 File uploader instance.
+            overwrite (bool):
+                Overwrite existing file. Default to ``False``.
             return_url (bool):
-                After saving, return the URL of the file.
+                After saving, return the URL of the file. Default to ``False``.
             external (bool):
                 Generate absolute URL. Default to ``False``.
         """
         super().__init__(label, validators, **kwargs)
         self.uploader = uploader
+        self.overwrite = overwrite
         self.return_url = return_url
         self.external = external
+
+    def populate_obj(self, obj: t.Any, name: str) -> None:
+        """
+        Saves the uploaded file and populates `obj.<name>` with the search ID or URL.
+
+        Raises:
+            flask_uploader.exceptions.UploadNotAllowed:
+                Any error related to the inability to save the file, but not a validation error.
+
+        Note:
+            This is a destructive operation. If `obj.<name>` already exists,
+            it will be overridden. Use with caution.
+        """
+        setattr(obj, name, self.save())
 
     def post_validate(self, form: Form, validation_stopped: bool) -> None:
         if not validation_stopped and file_is_selected(self):
@@ -100,20 +118,14 @@ class UploaderField(FileField):  # type: ignore
             except exceptions.ValidationError as err:
                 raise ValidationError(str(err)) from err
 
-    def save(self, overwrite: bool = False) -> str:
-        """
-        Saves the uploaded file.
-
-        Arguments:
-            overwrite (bool):
-                Overwrite existing file. Default to ``False``.
-        """
+    def save(self) -> str:
+        """Saves the uploaded file."""
         if not file_is_selected(self):
             return ''
 
         lookup = self.uploader.save(
             storage=self.data,
-            overwrite=overwrite,
+            overwrite=self.overwrite,
             skip_validation=True,
         )
 

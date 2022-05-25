@@ -157,3 +157,49 @@ Amazon Reference
 .. autoclass:: flask_uploader.contrib.aws.S3Storage
     :members:
     :show-inheritance:
+
+WTForms Reference
+~~~~~~~~~~~~~~~~~
+
+.. autofunction:: flask_uploader.contrib.wtf.file_is_selected
+.. autofunction:: flask_uploader.contrib.wtf.wrap_validator
+
+.. autoclass:: flask_uploader.contrib.wtf.UploaderField
+    :members:
+    :show-inheritance:
+
+.. autoclass:: flask_uploader.contrib.wtf.Extension
+    :members:
+    :show-inheritance:
+
+.. autoclass:: flask_uploader.contrib.wtf.extension
+    :members:
+    :show-inheritance:
+
+.. autoclass:: flask_uploader.contrib.wtf.FileSize
+    :members:
+    :show-inheritance:
+
+.. autoclass:: flask_uploader.contrib.wtf.file_size
+    :members:
+    :show-inheritance:
+
+.. autoclass:: flask_uploader.contrib.wtf.ImageSize
+    :members:
+    :show-inheritance:
+
+.. autoclass:: flask_uploader.contrib.wtf.image_size
+    :members:
+    :show-inheritance:
+
+.. autoclass:: flask_uploader.contrib.wtf.MimeType
+    :members:
+    :show-inheritance:
+
+.. autoclass:: flask_uploader.contrib.wtf.mime_type
+    :members:
+    :show-inheritance:
+
+.. autoclass:: flask_uploader.contrib.wtf.UploaderField
+    :members:
+    :show-inheritance:
