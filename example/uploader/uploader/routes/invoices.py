@@ -23,9 +23,10 @@ from flask_uploader.views import (
 
 bp = Blueprint('invoices', __name__, url_prefix='/invoices')
 
+invoices_storage = FileSystemStorage(dest='invoices', filename_strategy=TimestampStrategy())
 invoices_uploader = Uploader(
     'invoices',
-    FileSystemStorage(dest='invoices', filename_strategy=TimestampStrategy()),
+    invoices_storage,
     endpoint='site.invoices.download',
     validators=[
         Extension(
@@ -52,7 +53,7 @@ class UploadInvoiceView(BaseView):
     def get(self):
         return render_template(
             'invoices.html',
-            files=iter_files(invoices_uploader.storage),
+            files=iter_files(invoices_storage),
             uploader=invoices_uploader,
         )
 

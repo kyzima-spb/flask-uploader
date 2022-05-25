@@ -12,6 +12,7 @@ pymongo_requires = [
 setup(
     install_requires=[
         'flask>=2',
+        'Flask-WTF>=1.0',
         'Pillow>=9.1',
     ],
     extras_require={

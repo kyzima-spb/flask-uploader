@@ -26,14 +26,15 @@ def original_filename(storage) -> str:
 
 bp = Blueprint('files', __name__, url_prefix='/files')
 
+files_storage = S3Storage(
+    aws.resource('s3'),
+    'flask-uploader',
+    filename_strategy=original_filename,
+    key_prefix='original_names',
+)
 files_uploader = Uploader(
     'files',
-    S3Storage(
-        aws.resource('s3'),
-        'flask-uploader',
-        filename_strategy=original_filename,
-        key_prefix='original_names',
-    ),
+    files_storage,
     validators=[]
 )
 
@@ -43,7 +44,7 @@ def index():
     return render_template(
         'files.html',
         uploader=files_uploader,
-        files=iter_files(files_uploader.storage),
+        files=iter_files(files_storage),
     )
 
 

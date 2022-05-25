@@ -76,7 +76,7 @@ class Uploader(metaclass=UploaderMeta):
     __slots__ = (
         '__weakref__',
         'name',
-        'storage',
+        '_storage',
         'validators',
         '_endpoint',
         'use_auto_route',
@@ -102,7 +102,7 @@ class Uploader(metaclass=UploaderMeta):
             validators = []
 
         self.name = name
-        self.storage = storage
+        self._storage = storage
         self.validators = validators
         self._endpoint = endpoint
         self.use_auto_route = use_auto_route
@@ -112,7 +112,7 @@ class Uploader(metaclass=UploaderMeta):
             self.__class__.__name__, self.name
         )
 
-    def get_url(self, lookup: str, external: bool = True) -> str:
+    def get_url(self, lookup: str, external: bool = False) -> str:
         """
         Returns the URL to the given file.
 
@@ -126,7 +126,7 @@ class Uploader(metaclass=UploaderMeta):
         if self._endpoint is not None:
             return url_for(self._endpoint, lookup=lookup, _external=external)
 
-        url = self.storage.get_url(lookup)
+        url = self._storage.get_url(lookup)
 
         if url is not None:
             return url
@@ -148,14 +148,38 @@ class Uploader(metaclass=UploaderMeta):
 
     def load(self, lookup: str) -> File:
         """Reads and returns a ``File`` object for an identifier."""
-        return self.storage.load(lookup)
+        return self._storage.load(lookup)
 
     def remove(self, lookup: str) -> None:
         """Deletes a file from storage by unique identifier."""
-        self.storage.remove(lookup)
+        self._storage.remove(lookup)
 
-    def save(self, storage: FileStorage, overwrite: bool = False) -> str:
-        """Saves the uploaded file and returns an identifier for searching."""
+    def save(
+        self,
+        storage: FileStorage,
+        overwrite: bool = False,
+        skip_validation: bool = False,
+    ) -> str:
+        """
+        Saves the uploaded file and returns an identifier for searching.
+
+        Arguments:
+            storage (FileStorage):
+                Object to represent uploaded file.
+            overwrite (bool):
+                Overwrite existing file. Default to ``False``.
+            skip_validation (bool):
+                Do not validate the uploaded file. Default to ``False``.
+        """
+        if not skip_validation:
+            self.validate(storage)
+        return self._storage.save(storage, overwrite=overwrite)
+
+    def validate(self, storage: FileStorage) -> None:
+        """
+        Validates the uploaded file and throws a
+        :py:class`~flask_uploader.exceptions.ValidationError`
+        exception if an error appears.
+        """
         for validator in self.validators:
             validator(storage)
-        return self.storage.save(storage, overwrite=overwrite)

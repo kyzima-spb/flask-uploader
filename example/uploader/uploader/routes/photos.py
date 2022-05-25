@@ -21,9 +21,10 @@ from flask_uploader.validators import (
 
 bp = Blueprint('photos', __name__, url_prefix='/photos')
 
+photos_storage = FileSystemStorage(dest='photos')
 photos_uploader = Uploader(
     'photos',
-    FileSystemStorage(dest='photos'),
+    photos_storage,
     validators=[
         FileRequired(),
         FileSize('10Mb'),
@@ -38,7 +39,7 @@ def index():
     return render_template(
         'photos.html',
         uploader=photos_uploader,
-        files=iter_files(photos_uploader.storage),
+        files=iter_files(photos_storage),
     )
 
 
