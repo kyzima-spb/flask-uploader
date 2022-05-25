@@ -12,9 +12,13 @@ from ..exceptions import ValidationError
 
 __all__ = (
     'Extension',
+    'extension',
     'FileSize',
+    'file_size',
     'ImageSize',
+    'image_size',
     'MimeType',
+    'mime_type',
 )
 
 

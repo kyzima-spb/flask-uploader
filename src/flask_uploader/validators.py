@@ -73,20 +73,31 @@ class Extension:
 
     def __init__(
         self,
-        extensions: t.Union[set[str], frozenset[str]]
+        extensions: t.Union[set[str], frozenset[str]],
+        message: t.Optional[str] = None,
     ) -> None:
+        """
+        Arguments:
+            extensions (set|frozenset):
+                Allowed file extensions.
+            message (str):
+                Error message to raise in case of a validation error.
+        """
         self.extensions = extensions
+        self.message = message
 
     def __call__(self, storage: FileStorage) -> None:
         ext = '' if storage.filename is None else get_extension(storage.filename)
 
         if not ext:
-            raise ValidationError('The file has no extension.')
+            message = self.message or 'The file has no extension.'
+            raise ValidationError(message)
 
         ext = ext.lower().lstrip('.')
 
         if ext not in self.extensions:
-            raise ValidationError('This file type is not allowed to be uploaded.')
+            message = self.message or 'This file type is not allowed to be uploaded.'
+            raise ValidationError(message)
 
 
 class FileRequired:
@@ -94,9 +105,19 @@ class FileRequired:
     The validator checks that the file has been selected and submitted.
     """
 
+    def __init__(self, message: t.Optional[str] = None) -> None:
+        """
+        Arguments:
+            message (str):
+                Error message to raise in case of a validation error.
+        """
+        if not message:
+            message = 'The file "%(filename)s" is required.'
+        self.message = message
+
     def __call__(self, storage: FileStorage) -> None:
         if not storage.filename:
-            raise ValidationError(f'The file "{storage.name}" is required.')
+            raise ValidationError(self.message % {'filename': storage.name})
 
 
 class FileSize:
@@ -106,7 +127,11 @@ class FileSize:
 
     _units = ('b', 'k', 'm', 'g', 't', 'p')
 
-    def __init__(self, max_size: t.Union[float, str]) -> None:
+    def __init__(
+        self,
+        max_size: t.Union[float, str],
+        message: t.Optional[str] = None,
+    ) -> None:
         """
         Arguments:
             max_size (float|str):
@@ -114,10 +139,17 @@ class FileSize:
                 Can be an integer number of bytes, or a string with a size suffix:
                 b, k, m, g, t, p.
                 For example: 512m or 512Mb
+            message (str):
+                Error message to raise in case of a validation error.
         """
         if isinstance(max_size, str):
             max_size = self.to_bytes(max_size)
+
+        if not message:
+            message = 'The size of the uploaded file cannot be more than %(max_size)s.'
+
         self.max_size = max_size
+        self.message = message
 
     def __call__(self, storage: FileStorage) -> None:
         storage.stream.seek(0, 2)
@@ -125,9 +157,7 @@ class FileSize:
         storage.stream.seek(0)
 
         if size > self.max_size:
-            raise ValidationError(
-                f'The size of the uploaded file cannot be more than {self.to_human()}.'
-            )
+            raise ValidationError(self.message % {'max_size': self.to_human()})
 
     def to_bytes(self, max_size: str) -> float:
         """Returns the maximum file size in bytes from a human readable string."""
@@ -152,56 +182,74 @@ class FileSize:
 
 
 class ImageSize:
+    EXACT_SIZE = 'Image size should be %(min_width)dx%(min_height)dpx.'
+    EXACT_WIDTH = 'Image width should be equal %(min_width)dpx.'
+    EXACT_HEIGHT = 'Image height should be equal %(min_height)dpx.'
+    SIZE_GREATER_EQUAL = 'Image size must be greater than or equal to %(min_width)dx%(min_height)dpx.'
+    SIZE_LESS_EQUAL = 'Image size must be less than or equal to %(max_width)dx%(max_height)dpx.'
+    WIDTH_GREATER_EQUAL = 'Image width must be greater than or equal to %(min_width)dpx.'
+    HEIGHT_GREATER_EQUAL = 'Image height must be greater than or equal to %(min_height)dpx.'
+    WIDTH_LESS_EQUAL = 'Image width must be less than or equal to %(max_width)dpx.'
+    HEIGHT_LESS_EQUAL = 'Image height must be less than or equal to %(max_height)dpx.'
+
     def __init__(
         self,
-        min_width: t.Optional[int] = None,
-        min_height: t.Optional[int] = None,
-        max_width: t.Optional[int] = None,
-        max_height: t.Optional[int] = None,
+        min_width: int = -1,
+        min_height: int = -1,
+        max_width: int = -1,
+        max_height: int = -1,
+        message: t.Optional[str] = None,
     ) -> None:
-        if min_width is not None and max_width is not None:
-            if min_width > max_width:
-                raise ValueError('The minimum width must be less than the maximum.')
+        if min_width < 0 and max_width < 0 and min_height < 0 and max_height < 0:
+            raise ValueError('At least one of the size options must be given.')
 
-        if min_height is not None and max_height is not None:
-            if min_height > max_height:
-                raise ValueError('The minimum height must be less than the maximum.')
+        if min_width >= 0 and 0 <= max_width < min_width:
+            raise ValueError('The minimum width must be less than the maximum.')
+
+        if min_height >= 0 and 0 <= max_height < min_height:
+            raise ValueError('The minimum height must be less than the maximum.')
 
         self.min_width = min_width
         self.min_height = min_height
         self.max_width = max_width
         self.max_height = max_height
+        self.message = message
 
     def __call__(self, storage: FileStorage) -> None:
         try:
             image = Image.open(storage.stream)
         except UnidentifiedImageError as err:
-            raise ValidationError('Unsupported image type.') from err
+            message = 'Unsupported image type.' if self.message is None else self.message
+            raise ValidationError(self.format_message(message)) from err
 
         self.validate_image(image)
         storage.stream.seek(0)
 
+    def format_message(self, message: str, **kwargs: t.Any) -> str:
+        return message % {
+            'min_width': self.min_width,
+            'min_height': self.min_height,
+            'max_width': self.max_width,
+            'max_height': self.max_height,
+            **kwargs,
+        }
+
     def validate_image(self, image: Image.Image) -> None:
         width, height = image.size
+        invalid = (
+            self.min_width >= 0 and self.min_width > width
+            or
+            self.min_height >= 0 and self.min_height > height
+            or
+            0 <= self.max_width < width
+            or
+            0 <= self.max_height < height
+        )
 
-        if self.min_width is not None and width < self.min_width:
+        if invalid:
+            message = 'Invalid image size.' if self.message is None else self.message
             raise ValidationError(
-                f'The width of the image must be greater than or equal to {self.min_width}px.'
-            )
-
-        if self.max_width is not None and width > self.max_width:
-            raise ValidationError(
-                f'The image width must be less than or equal to {self.max_width}px.'
-            )
-
-        if self.min_height is not None and height < self.min_height:
-            raise ValidationError(
-                f'The height of the image must be greater than or equal to {self.min_height}px.'
-            )
-
-        if self.max_height is not None and height > self.max_height:
-            raise ValidationError(
-                f'The image height must be less than or equal to {self.max_height}px.'
+                self.format_message(message, width=width, height=height)
             )
 
 
@@ -256,13 +304,17 @@ class MimeType:
 
     def __init__(
         self,
-        mime_types: t.Union[set[str], frozenset[str]]
+        mime_types: t.Union[set[str], frozenset[str]],
+        message: t.Optional[str] = None,
     ) -> None:
         self.mime_types = mime_types
+        self.message = message
 
     def __call__(self, storage: FileStorage) -> None:
         if storage.mimetype is None:
-            raise ValidationError('There is no HTTP Content-Type header.')
+            message = self.message or 'There is no HTTP Content-Type header.'
+            raise ValidationError(message)
 
         if storage.mimetype not in self.mime_types:
-            raise ValidationError('This file type is not allowed to be uploaded.')
+            message = self.message or 'This file type is not allowed to be uploaded.'
+            raise ValidationError(message)
