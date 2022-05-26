@@ -36,11 +36,7 @@ photos_uploader = Uploader(
 
 @bp.route('/')
 def index():
-    return render_template(
-        'photos.html',
-        uploader=photos_uploader,
-        files=iter_files(photos_storage),
-    )
+    return render_template('photos.html', files=iter_files(photos_storage))
 
 
 @bp.route('/remove/<path:lookup>', methods=['POST'])

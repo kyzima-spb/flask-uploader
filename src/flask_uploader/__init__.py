@@ -1,11 +1,7 @@
 from __future__ import annotations
 import typing as t
 
-from flask import (
-    Blueprint,
-    current_app,
-    Flask,
-)
+from flask import Blueprint, Flask
 
 from .core import Uploader
 from .views import DownloadView
@@ -24,6 +20,12 @@ def init_uploader(app: Flask) -> None:
     app.config.setdefault('UPLOADER_BLUEPRINT_URL_PREFIX', '/media')
     app.config.setdefault('UPLOADER_BLUEPRINT_SUBDOMAIN', None)
     app.config.setdefault('UPLOADER_DEFAULT_ENDPOINT', 'download')
+
+    @app.context_processor
+    def processors() -> t.Dict[str, t.Any]:
+        def media_url(name: str, lookup: str) -> str:
+            return Uploader.get_instance(name).get_url(lookup)
+        return dict(media_url=media_url)
 
     bp = Blueprint(
         app.config['UPLOADER_BLUEPRINT_NAME'],

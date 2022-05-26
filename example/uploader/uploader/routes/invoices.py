@@ -51,11 +51,7 @@ class UploadInvoiceView(BaseView):
     uploader_or_name = invoices_uploader
 
     def get(self):
-        return render_template(
-            'invoices.html',
-            files=iter_files(invoices_storage),
-            uploader=invoices_uploader,
-        )
+        return render_template('invoices.html', files=iter_files(invoices_storage))
 
     def post(self):
         if 'file' not in request.files:

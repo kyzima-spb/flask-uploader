@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% import 'macros.html' as macro %}
+{% import 'macros.html' as macro with context %}
 
 {% block main %}
   <div class="row">
@@ -22,7 +22,7 @@
 
   <div class="row mb-4">
     <div class="col">
-      {{ macro.render_files_grid(files, uploader) }}
+      {{ macro.render_files_grid(files, 'invoices') }}
     </div>
   </div>
 {% endblock main %}

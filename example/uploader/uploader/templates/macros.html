@@ -1,4 +1,4 @@
-{% macro render_files_grid(files, uploader) %}
+{% macro render_files_grid(files, uploader_name) %}
   <h2 class="mb-3">Uploaded files</h2>
   <div class="table-responsive">
     <table class="table table-striped align-middle">
@@ -11,7 +11,7 @@
       {% for f in files %}
         <tr>
           <td>
-            {% set url = uploader.get_url(f.lookup) %}
+            {% set url = media_url(uploader_name, f.lookup) %}
             <a href="{{ url }}">{{ url }}</a>
           </td>
           <td>{{ f.filename }}</td>
