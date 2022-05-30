@@ -2,6 +2,7 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from datetime import datetime
 import os
+import re
 import typing as t
 
 from flask import current_app
@@ -178,6 +179,11 @@ class FileSystemStorage(AbstractStorage):
         super().__init__(filename_strategy)
         self.dest = os.path.expandvars(dest)
 
+    def _make_filepath(self, lookup: str) -> str:
+        """Returns the absolute path to the uploaded file."""
+        lookup = re.sub(r'^[./\\]+', '', lookup)
+        return os.path.join(self.get_root_dir(), lookup)
+
     def get_root_dir(self) -> str:
         """Returns the root directory for saving uploaded files."""
         if os.path.isabs(self.dest):
@@ -207,7 +213,7 @@ class FileSystemStorage(AbstractStorage):
         return root_dir
 
     def load(self, lookup: str) -> File:
-        path = os.path.join(self.get_root_dir(), lookup)
+        path = self._make_filepath(lookup)
 
         if not os.path.exists(path):
             raise FileNotFound(f'File with path {lookup!r} not found.')
@@ -220,7 +226,7 @@ class FileSystemStorage(AbstractStorage):
         )
 
     def remove(self, lookup: str) -> None:
-        path = os.path.join(self.get_root_dir(), lookup)
+        path = self._make_filepath(lookup)
         if os.path.exists(path):
             os.remove(path)
 
@@ -255,7 +261,7 @@ class FileSystemStorage(AbstractStorage):
     def save(self, storage: FileStorage, overwrite: bool = False) -> str:
         root_dir = self.get_root_dir()
         lookup = self.generate_filename(storage)
-        path = os.path.join(root_dir, lookup)
+        path = self._make_filepath(lookup)
 
         if not overwrite and os.path.exists(path):
             path = self._resolve_conflict(path)
