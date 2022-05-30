@@ -9,11 +9,12 @@ from flask_login import (
     logout_user,
 )
 
-from ..extensions import mongo, User
 from ..forms import LoginForm
+from ..models import User, Manager
 
 
 bp = Blueprint('auth', __name__)
+user_manager = Manager(User)
 
 
 @bp.route('/login', methods=['POST'])
@@ -21,17 +22,15 @@ def login():
     form = LoginForm()
 
     if form.validate_on_submit():
-        user = User.find(
+        user = user_manager.find_one(
             username=form.username.data,
             password=form.password.data,
         )
 
         if user is None:
-            user_id = mongo.db.users.insert_one({
-                'username': form.username.data,
-                'password': form.password.data,
-            }).inserted_id
-            user = User(user_id, form.username.data)
+            user = User()
+            form.populate_obj(user)
+            user_manager.save(user)
 
         login_user(user)
     else:

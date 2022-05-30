@@ -9,39 +9,15 @@ from flask import (
     request,
     url_for,
 )
-from flask_wtf import FlaskForm
-from flask_wtf.file import FileField, FileRequired
 from flask_uploader import Uploader
-from flask_uploader.contrib.pymongo import GridFSStorage, Lookup, iter_files
 from flask_uploader.exceptions import UploaderException, UploadNotAllowed
-from flask_uploader.validators import MimeType
-from wtforms import fields
-from wtforms import validators
 
-from ..extensions import mongo
+from ..forms import BookForm
+from ..models import Book, Manager
 
 
 bp = Blueprint('books', __name__, url_prefix='/books')
-
-books_uploader = Uploader(
-    'books',
-    GridFSStorage(mongo, 'books'),
-    validators=[
-        MimeType(MimeType.BOOKS),
-    ]
-)
-
-
-class BookForm(FlaskForm):
-    title = fields.StringField(validators=[
-        validators.InputRequired(),
-        validators.Length(min=4, max=255),
-    ])
-    file = FileField(
-        validators=[
-            FileRequired(),
-        ]
-    )
+book_manager = Manager[Book](Book, 'books')
 
 
 @bp.route('/', methods=['GET', 'POST'])
@@ -50,27 +26,45 @@ def index():
 
     if form.validate_on_submit():
         try:
-            lookup: Lookup = books_uploader.save(form.file.data, overwrite=True)
-            mongo.db.books.insert_one({
-                'title': form.title.data,
-                'file': lookup.oid,
-            })
-            flash(f'File saved successfully - {lookup}.')
+            book = Book()
+            form.populate_obj(book)
+            book_manager.save(book)
+            flash(f'Book saved successfully.')
             return redirect(request.url)
         except UploadNotAllowed as err:
             form.file.errors.append(str(err))
-        except UploaderException as err:
-            abort(500, str(err))
 
-    return render_template(
-        'books.html',
-        form=form,
-        uploader=books_uploader,
-        files=iter_files(books_uploader.storage)
-    )
+    return render_template('books.html', form=form, books=book_manager.find())
 
 
-@bp.route('/remove/<path:lookup>', methods=['POST'])
-def remove(lookup):
-    books_uploader.remove(lookup)
+@bp.route('/edit/<ObjectId:id>', methods=['GET', 'POST'])
+def edit(id):
+    book = book_manager.get(id)
+
+    if book is None:
+        abort(404)
+
+    form = BookForm(obj=book)
+
+    if form.validate_on_submit():
+        try:
+            form.populate_obj(book)
+            book_manager.save(book)
+            flash(f'Book saved successfully.')
+            return redirect(request.url)
+        except UploadNotAllowed as err:
+            form.file.errors.append(str(err))
+
+    return render_template('books.html', form=form)
+
+
+@bp.route('/remove/<ObjectId:id>', methods=['POST'])
+def remove(id):
+    book = book_manager.get(id)
+
+    if book is not None:
+        books_uploader = Uploader.get_instance('books')
+        books_uploader.remove(book.file)
+        book_manager.delete(book)
+
     return redirect(url_for('.index'))

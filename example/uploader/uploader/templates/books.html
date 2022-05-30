@@ -22,6 +22,15 @@
           </div>
         </div>
         <div class="mb-3">
+          {{ form.cover.label(class='form-label') }}
+          <div class="input-group">
+            {{ form.cover(class='form-control is-invalid' if form.cover.errors else 'form-control') }}
+            <div class="invalid-feedback">
+              {{ form.cover.errors | join(',') }}
+            </div>
+          </div>
+        </div>
+        <div class="mb-3">
           {{ form.file.label(class='form-label') }}
           <div class="input-group">
             {{ form.file(class='form-control is-invalid' if form.file.errors else 'form-control') }}
@@ -35,9 +44,41 @@
     </div>
   </div>
 
-  <div class="row mb-4">
-    <div class="col">
-      {{ macro.render_files_grid(files, 'books') }}
-    </div>
+  {% if books %}
+    <div class="row mb-4">
+      <div class="col">
+        <h2 class="mb-3">Uploaded files</h2>
+        {% for book in books %}
+          {% set url = media_url('books', book.file) %}
+          <div class="card mb-3">
+            <div class="row g-0">
+              <div class="col-md-2">
+                <img class="img-fluid rounded-start" src="{{ book.cover_url }}" alt="{{ book.title }}">
+              </div>
+              <div class="col-md-10">
+                <div class="card-body">
+                  <h5 class="card-title mb-4">{{ book.title }}</h5>
+                  <p class="card-text">
+                    <b>Book ID</b>: {{ book.get_id() }}
+                  </p>
+                  <p class="card-text">
+                    <b>URL</b>: <a href="{{ url }}">{{ url }}</a>
+                  </p>
+                  <p class="card-text">
+                    <b>Filename</b>: {{ book.file }}
+                  </p>
+                  <form action="{{ url_for('.remove', id=book.get_id()) }}" method="post">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <a class="btn btn-success" href="{{ url }}">Download</a>
+                    <a class="btn btn-primary" href="{{ url_for('.edit', id=book.get_id()) }}">Edit</a>
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
   </div>
 {% endblock main %}

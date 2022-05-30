@@ -2,7 +2,8 @@ from flask import Flask
 from flask_uploader import init_uploader
 
 from . import routes
-from .extensions import csrf, login_manager, mongo, aws
+from .extensions import csrf, login_manager, aws
+from .models import mongo
 
 
 def create_app():

@@ -4,7 +4,11 @@ import typing as t
 
 from flask_wtf.file import FileField
 from wtforms.form import Form
-from wtforms.validators import StopValidation, ValidationError
+from wtforms.validators import (
+    DataRequired,
+    StopValidation,
+    ValidationError,
+)
 from werkzeug.datastructures import FileStorage
 
 from .. import exceptions
@@ -15,6 +19,8 @@ from ..core import Uploader
 __all__ = (
     'Extension',
     'extension',
+    'FileRequired',
+    'file_required',
     'FileSize',
     'file_size',
     'ImageSize',
@@ -53,6 +59,7 @@ def wrap_validator(cls: _F) -> _F:
 
 
 Extension = extension = wrap_validator(validators.Extension)
+FileRequired = file_required = DataRequired
 FileSize = file_size = wrap_validator(validators.FileSize)
 ImageSize = image_size = wrap_validator(validators.ImageSize)
 MimeType = mime_type = wrap_validator(validators.MimeType)
@@ -109,19 +116,21 @@ class UploaderField(FileField):  # type: ignore
             This is a destructive operation. If `obj.<name>` already exists,
             it will be overridden. Use with caution.
         """
-        setattr(obj, name, self.save())
+        lookup = self.save()
+        setattr(obj, name, self.data if lookup is None else lookup)
 
     def post_validate(self, form: Form, validation_stopped: bool) -> None:
+        """Runs validators from the uploader."""
         if not validation_stopped and file_is_selected(self):
             try:
                 self.uploader.validate(self.data)
             except exceptions.ValidationError as err:
                 raise ValidationError(str(err)) from err
 
-    def save(self) -> str:
+    def save(self) -> t.Optional[str]:
         """Saves the uploaded file."""
         if not file_is_selected(self):
-            return ''
+            return None
 
         lookup = self.uploader.save(
             storage=self.data,
