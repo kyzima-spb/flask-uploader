@@ -35,6 +35,10 @@ Exceptions Reference
     :members:
     :show-inheritance:
 
+.. autoclass:: flask_uploader.exceptions.PermissionDenied
+    :members:
+    :show-inheritance:
+
 .. autoclass:: flask_uploader.exceptions.ValidationError
     :members:
     :show-inheritance:
@@ -43,18 +47,20 @@ Exceptions Reference
     :members:
     :show-inheritance:
 
+Formats Reference
+-----------------
+
+.. autofunction:: flask_uploader.formats.get_format
+.. autofunction:: flask_uploader.formats.guess_type
+
+.. autoclass:: flask_uploader.formats.FileFormat
+    :members:
+    :show-inheritance:
+
 Storage Reference
 -----------------
 
 .. autoclass:: flask_uploader.storages.File
-    :members:
-    :show-inheritance:
-
-.. autoclass:: flask_uploader.storages.TFilenameStrategy
-    :members:
-    :show-inheritance:
-
-.. autoclass:: flask_uploader.storages.HashedFilenameStrategy
     :members:
     :show-inheritance:
 
@@ -66,7 +72,20 @@ Storage Reference
     :members:
     :show-inheritance:
 
-.. autoclass:: flask_uploader.contrib.pymongo.GridFSStorage
+Strategies Reference
+~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: flask_uploader.storages.iter_files
+
+.. autoclass:: flask_uploader.storages.TFilenameStrategy
+    :members:
+    :show-inheritance:
+
+.. autoclass:: flask_uploader.storages.HashedFilenameStrategy
+    :members:
+    :show-inheritance:
+
+.. autoclass:: flask_uploader.storages.TimestampStrategy
     :members:
     :show-inheritance:
 
@@ -197,9 +216,5 @@ WTForms Reference
     :show-inheritance:
 
 .. autoclass:: flask_uploader.contrib.wtf.mime_type
-    :members:
-    :show-inheritance:
-
-.. autoclass:: flask_uploader.contrib.wtf.UploaderField
     :members:
     :show-inheritance:

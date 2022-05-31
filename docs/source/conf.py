@@ -77,6 +77,10 @@ html_static_path = ['_static']
 # documentation.
 #
 html_theme_options = {
+    'description': 'Загрузчик файлов для Flask с гибкой возможностью расширения',
+    'show_related': True,
+    'show_relbar_top': False,
+    'show_relbar_bottom': True,
     # 'logo': 'logo.png',
     'github_user': 'kyzima-spb',
     'github_repo': 'flask-uploader',
@@ -84,7 +88,7 @@ html_theme_options = {
     'github_type': 'star',
     'github_banner': True,
     'extra_nav_links': {
-    }
+    },
 }
 
 # Custom sidebar templates, must be a dictionary that maps document names

@@ -16,6 +16,13 @@ import mimetypes
 from .utils import get_extension
 
 
+__all__ = (
+    'get_format',
+    'guess_type',
+    'FileFormat',
+)
+
+
 class FileFormat(t.NamedTuple):
     extension: str
     mimetype: str

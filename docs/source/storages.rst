@@ -3,92 +3,88 @@
 Хранилища
 =========
 
-Имя файла
----------
+Файловая система
+----------------
 
-Оригинальное имя загруженного файла не используется при сохранении.
-Новое имя должна вернуть **стратегия** - это вызываемый объект,
-который в качестве единственного аргумента принимает загруженный файл и возвращает новое имя.
+Самый часто используемый тип хранилища, не требующий установки дополнительных зависимостей.
+Конструктор :py:class:`~flask_uploader.storages.FileSystemStorage`
+принимает один обязательный аргумент ``dest`` - путь к директории,
+в которой будут сохраняться загруженные файлы.
+Значение может быть:
 
-.. code-block:: python
+* абсолютным путем;
+* относительным путем с обязательной опцией ``UPLOADER_ROOT_DIR``,
+  тогда абсолютный путь рассчитывается как ``{UPLOADER_ROOT_DIR}/{dest}``;
+* относительным путем с включенной опцией ``UPLOADER_INSTANCE_RELATIVE_ROOT``,
+  тогда абсолютный путь рассчитывается как ``<instance_folder>/{dest}``;
+* относительным путем с включенной опцией ``UPLOADER_INSTANCE_RELATIVE_ROOT``
+  и не пустым значением опции ``UPLOADER_ROOT_DIR``,
+  тогда абсолютный путь рассчитывается как ``<instance_folder>/{UPLOADER_ROOT_DIR}/{dest}``.
 
-    # Source code from Flask-Uploader
-
-    import typing as t
-
-    from werkzeug.datastructures import FileStorage
-
-    TFilenameStrategy = t.Callable[[FileStorage], str]
-
-По-умолчанию используется :py:class:`~flask_uploader.storages.HashedFilenameStrategy`,
-которая генерирует имя, вычисляя хэш содержимого файла и разбивая его на указанное количество частей указанной длины.
-Она решает проблему хранения большого количества файлов на жестком диске,
-когда количество файлов в одном каталоге ограничено ОС.
-Благодаря хешу и разбиению файлы равномерно хранятся в каталогах.
-
-Новая стратегия
-~~~~~~~~~~~~~~~
-
-Вы можете реализовать абсолютно любую стратегию для генерации имени,
-например, пусть имя сохраняемого файла будет текущей датой и временем:
+Пример №1:
 
 .. code-block:: python
 
-    from datetime import datetime
+    >>> from flask import Flask
+    >>> from flask_uploader.storages import FileSystemStorage
 
-    from flask_uploader.utils import get_extension
-    from werkzeug.datastructures import FileStorage
+    >>> app = Flask(__name__)
+    >>> app.config['UPLOADER_ROOT_DIR'] = '/app/uploads/'
 
+    >>> files_storage = FileSystemStorage(dest='files')
+    >>> files_storage.get_root_dir()
+    '/app/uploads/files'
 
-    def timestamp_strategy(storage: FileStorage) -> str:
-        return '%s%s' % (
-            datetime.now().strftime('%Y-%m-%d-%H-%M-%S'),
-            get_extension(storage.filename) if storage.filename else ''
-        )
-
-В момент создания экземпляра хранилища в конструктор передайте аргумент ``filename_strategy``:
+Пример №2:
 
 .. code-block:: python
 
+    >>> from flask import Flask
+    >>> from flask_uploader.storages import FileSystemStorage
+
+    >>> app = Flask(__name__, instance_path='/app/instance') # for example
+    >>> app.config['UPLOADER_ROOT_DIR'] = 'uploads'
+    >>> app.config['UPLOADER_INSTANCE_RELATIVE_ROOT'] = True
+
+    >>> files_storage = FileSystemStorage(dest='files')
+    >>> files_storage.get_root_dir()
+    '/app/instance/uploads/files'
+
+Рекомендуется избегать общих директорий для разных экземпляров хранилищ,
+Это защитит вас от случайной перезаписи, удаления или несанкционированного доступа к файлам
+другими загрузчиками или хранилищами. Например::
+
+    uploads
+    └── files
+        ├── books
+        └── photos
+
+.. code-block:: python
+
+    from flask import Flask
     from flask_uploader.storages import FileSystemStorage
 
-    storage = FileSystemStorage(
-        dest='files',
-        filename_strategy=timestamp_strategy
-    )
+    # Good practice
+    books_storage = FileSystemStorage(dest='files/books')
+    photos_storage = FileSystemStorage(dest='files/photos')
 
-Если все таки нужно сохранить оригинальное имя, то можно реализовать такую стратегию:
+    # Bad practice, has access to files from other storages.
+    files_storage = FileSystemStorage(dest='files')
 
-.. code-block:: python
-
-    from werkzeug.utils import secure_filename
-
-    def original_filename(storage: FileStorage) -> str:
-        # Non-ASCII characters will be removed
-        # For filename '天安门.jpg' returns 'jpg'
-        if storage.filename:
-            return secure_filename(storage.filename)
-        return ''
-
-Помните, что метод :py:meth:`~flask_uploader.storages.AbstractStorage.save` перед сохранением
-проверит существование файла, если явно не передан аргумент ``overwrite``,
-и если файл существует, то к имени будет добавлен постфикс.
-Это верно для любой стратегии.
-
-Mongodb GridFS
+MongoDB GridFS
 --------------
 
 Из документации:
 
-    GridFS - это спецификация для хранения и извлечения файлов,
-    размер которых превышает предельный размер документа BSON равный 16 МБ.
+    **GridFS** - это спецификация для хранения и извлечения файлов,
+    размер которых превышает предельный размер документа BSON равный 16Mb.
 
 ``Flask-Uploader`` использует расширение `Flask-Pymongo`_,
 поэтому все доступные конфигурационные параметры смотрите в их документации.
 
 Чтобы использовать GridFS неоходимо установить дополнительные зависимости::
 
-    pip install 'flask-uploader[pymongo]'
+    pip install 'Flask-Uploader[pymongo]'
 
 Затем создайте новый экземпляр хранилища на основе класса
 :py:class:`~flask_uploader.contrib.pymongo.GridFSStorage`.
@@ -105,7 +101,7 @@ Mongodb GridFS
     books_storage = GridFSStorage(mongo, 'books')
 
 Рекомендуется использовать разные коллекции для разных экземпляров хранилищ.
-Это обезопасит вас от случайной перезаписи, удаления или несанкционированного доступа к файлам
+Это защитит вас от случайной перезаписи, удаления или несанкционированного доступа к файлам
 другими загрузчиками или хранилищами.
 
 Перезапись файла
@@ -172,7 +168,7 @@ Amazon S3
 тогда имена опций совпадают с именами, указанными в таблице ниже.
 
 Либо указать опцию для конкретного сервиса, например облачного хранилища ``S3``,
-тогда имена опций указываются по шаблону: ``AWS_<service_name>_<option_name>>``,
+тогда имена опций указываются по шаблону: ``AWS_<service_name>_<option_name>``,
 например ``AWS_S3_ENDPOINT_URL``:
 
 =========================================    ================================================================
@@ -199,7 +195,7 @@ Amazon S3
 
 Чтобы использовать облачное хранишище S3 неоходимо установить дополнительные зависимости::
 
-    pip install 'flask-uploader[aws]'
+    pip install 'Flask-Uploader[aws]'
 
 Затем создайте новый экземпляр хранилища на основе класса
 :py:class:`~flask_uploader.contrib.aws.S3Storage`.
@@ -220,8 +216,9 @@ Amazon S3
 
 Если вы хотите использовать одну корзину для разных экземпляров
 :py:class:`~flask_uploader.contrib.aws.S3Storage`,
-то рекомендуется использовать уникальный префикс для ключей.
-Это обезопасит вас от случайной перезаписи, удаления или несанкционированного доступа к файлам
+то рекомендуется задать уникальный префикс для ключей
+и избегать более общих префиксов для разных экземпляров хранилищ,
+Это защитит вас от случайной перезаписи, удаления или несанкционированного доступа к файлам
 другими загрузчиками или хранилищами:
 
 .. code-block:: python
@@ -234,6 +231,72 @@ Amazon S3
         'flask-uploader',
         key_prefix='files',
     )
+
+Имя файла
+---------
+
+Оригинальное имя загруженного файла не используется при сохранении.
+Новое имя должна вернуть **стратегия** - это вызываемый объект,
+который в качестве единственного аргумента принимает загруженный файл и возвращает новое имя.
+
+.. code-block:: python
+
+    # Source code from Flask-Uploader
+
+    import typing as t
+
+    from werkzeug.datastructures import FileStorage
+
+    TFilenameStrategy = t.Callable[[FileStorage], str]
+
+По-умолчанию используется :py:class:`~flask_uploader.storages.HashedFilenameStrategy`,
+которая генерирует имя, вычисляя хэш содержимого файла и разбивая его на указанное количество частей указанной длины.
+Она решает проблему хранения большого количества файлов на жестком диске,
+когда количество файлов в одном каталоге ограничено ОС.
+Благодаря хешу и разбиению файлы равномерно хранятся в каталогах.
+
+Новая стратегия
+~~~~~~~~~~~~~~~
+
+Вы можете реализовать абсолютно любую стратегию для генерации имени,
+например, пусть имя сохраняемого файла будет текущей датой и временем:
+
+.. code-block:: python
+
+    from datetime import datetime
+
+    from flask_uploader.utils import get_extension
+    from werkzeug.datastructures import FileStorage
+
+
+    def timestamp_strategy(storage: FileStorage) -> str:
+        return '%s%s' % (
+            datetime.now().strftime('%Y-%m-%d-%H-%M-%S'),
+            get_extension(storage.filename) if storage.filename else ''
+        )
+
+В момент создания экземпляра хранилища в конструктор передайте аргумент ``filename_strategy``:
+
+.. code-block:: python
+
+    from flask_uploader.storages import FileSystemStorage
+
+    storage = FileSystemStorage(
+        dest='files',
+        filename_strategy=timestamp_strategy
+    )
+
+``Flask-Uploader`` имеет готовую реализацию этой стратегии с возможностью указать формат даты/времени:
+:py:class:`flask_uploader.storages.TimestampStrategy`.
+
+Метод :py:meth:`~flask_uploader.storages.AbstractStorage.save` перед сохранением проверит:
+
+1. что сгенерированное имя не пустая строка, иначе выбросит исключение
+   :py:class:`~flask_uploader.exceptions.InvalidLookup`;
+2. что файл существует и если явно не передан аргумент ``overwrite``,
+   добавит к имени суффикс ``_N`` (изменить суффикс нельзя).
+
+Это верно для любой стратегии.
 
 
 .. _Flask-Pymongo: https://flask-pymongo.readthedocs.io/en/latest/

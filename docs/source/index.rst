@@ -16,20 +16,20 @@ Flask-Uploader
 
 Установите последнюю стабильную версию, выполнив команду::
 
-    pip install flask-uploader
+    pip install Flask-Uploader
 
 Или установите последнюю тестовую версию, которая может и будет содержать баги =)
 Она автоматически собирается и публикуется на `test.pypi.org`_::
 
-    pip install -i https://test.pypi.org/simple/ flask-uploader
+    pip install -i https://test.pypi.org/simple/ Flask-Uploader
 
 
 Конфигурация
 ------------
 
-``Flask_uploader`` использует для инициализации функцию :py:func:`~flask_uploader.init_uploader`
-(это допустимо `правилами разработки расширений`_ для Flask).
-Вызывать эту фукнцию допустимо в любом месте, обычно это:
+``Flask-Uploader`` использует для инициализации функцию :py:func:`~flask_uploader.init_uploader`
+(это разрешено `правилами разработки расширений`_ для Flask).
+Вызвать эту фукнцию можно в любом месте, обычно это:
 
 * `фабричная функция`_, которая возвращает экземпляр приложения (предпочтительный вариант)
 * модуль с экземплярами всех используемых расширений
@@ -80,7 +80,7 @@ Flask-Uploader
 Создание загрузчика
 -------------------
 
-**Загрузчик** - это экземпляр класса :py:class:`~flask_uploader.Uploader`.
+**Загрузчик** - это экземпляр класса :py:class:`~flask_uploader.core.Uploader`.
 **Цели загрузчика**:
 
 * валидация загруженного файла
@@ -106,7 +106,8 @@ Flask-Uploader
 В примере мы создаем загрузчик с именем ``photos``,
 который будет сохранять загруженные файлы на жестком диске относительно корня директории,
 заданной конфигурационной опцией ``UPLOADER_ROOT_DIR`` в поддиректории ``photos``.
-Разрешены только файлы изображений, для всех остальных файлов будет выброшено исключение
+Разрешены только файлы изображений не более 10Mb и размером 1920х1080px,
+для всех остальных файлов будет выброшено исключение
 :py:class:`~flask_uploader.validators.ValidationError`.
 
 .. code-block:: python
@@ -115,16 +116,23 @@ Flask-Uploader
 
     from flask_uploader import Uploader
     from flask_uploader.storages import FileSystemStorage
-    from flask_uploader.validators import ExtensionValidator
+    from flask_uploader.validators import (
+        Extension,
+        ImageSize,
+        FileRequired,
+        FileSize,
+    )
 
 
+    photos_storage = FileSystemStorage(dest='photos')
     photos_uploader = Uploader(
         'photos',
-        FileSystemStorage(dest='photos'),
+        photos_storage,
         validators=[
-            ExtensionValidator(
-                ExtensionValidator.IMAGES
-            ),
+            FileRequired(),
+            FileSize('10Mb'),
+            Extension(Extension.IMAGES),
+            ImageSize(max_width=1920, max_height=1080),
         ]
     )
 
@@ -133,7 +141,7 @@ Flask-Uploader
 
 Экземпляр загрузчика можно создать в любом удобном для вас месте,
 а затем в обработчике входной точки получить ранее созданный экземпляр с помощью статического метода
-:py:meth:`~flask_uploader.UploaderMeta.get_instance`:
+:py:meth:`~flask_uploader.core.UploaderMeta.get_instance`:
 
 .. code-block:: python
 
@@ -151,6 +159,7 @@ Flask-Uploader
     # Continuation of the routes/photos.py module
 
     from flask import Blueprint, flash, redirect, request
+    from flask_uploader.exceptions import UploadNotAllowed
 
 
     bp = Blueprint('photos', __name__, url_prefix='/photos')
@@ -163,9 +172,9 @@ Flask-Uploader
             return redirect(request.url)
 
         try:
-            photos_uploader.save(request.files['file'], overwrite=True)
-            flash('File saved successfully.')
-        except validators.ValidationError as err:
+            lookup = photos_uploader.save(request.files['file'])
+            flash(f'Photo saved successfully - {lookup}.')
+        except UploadNotAllowed as err:
             flash(str(err))
 
         return redirect(request.url)
@@ -193,7 +202,7 @@ Flask-Uploader
 ~~~~~~~~~~~~~~
 
 Если вам нужно запретить публичный доступ к загруженным файлам для маршрута по-умолчанию,
-то в момент создания экземпляра :py:class:`~flask_uploader.Uploader` в конструктор
+то в момент создания экземпляра :py:class:`~flask_uploader.core.Uploader` в конструктор
 передайте аргумент ``use_auto_route`` со значением ``False``:
 
 .. code-block:: python
@@ -202,7 +211,7 @@ Flask-Uploader
 
     from flask_uploader import Uploader
     from flask_uploader.storages import FileSystemStorage
-    from flask_uploader.validators import ExtensionValidator
+    from flask_uploader.validators import Extension
 
 
     payments_uploader = Uploader(
@@ -210,8 +219,8 @@ Flask-Uploader
         FileSystemStorage(dest='payments'),
         use_auto_route=False,
         validators=[
-            ExtensionValidator(
-                ExtensionValidator.IMAGES | ExtensionValidator.EDOCUMENTS
+            Extension(
+                Extension.IMAGES | Extension.EDOCUMENTS
             ),
         ]
     )
@@ -225,30 +234,33 @@ Flask-Uploader
 * запретить доступ для неаутентифицированных пользователей
 * использовать промежуточное ПО или HTTP-сервер для обслуживания файлов
 
-Для этого в момент создания экземпляра :py:class:`~flask_uploader.Uploader` в конструктор
-передайте аргумент ``endpoint`` с именем конечной точки, включая имена всех Blueprint:
+Для этого в момент создания экземпляра :py:class:`~flask_uploader.core.Uploader` в конструктор
+передайте аргумент ``endpoint`` с именем конечной точки, включая имена всех Blueprint.
+Используйте представление :py:class:`~flask_uploader.views.DownloadView`
+для описания конечной точки:
 
 .. code-block:: python
 
     # Module with endpoint handlers, for example - routes/invoices.py
 
-    from flask import Blueprint, send_file, abort
+    from flask import Blueprint
     from flask_login import login_required
     from flask_uploader import Uploader
     from flask_uploader.storages import FileSystemStorage
-    from flask_uploader.validators import MimeType
+    from flask_uploader.validators import Extension
     from flask_uploader.views import DownloadView
 
 
     bp = Blueprint('invoices', __name__, url_prefix='/invoices')
 
+    invoices_storage = FileSystemStorage(dest='invoices')
     invoices_uploader = Uploader(
         'invoices',
-        FileSystemStorage(dest='invoices'),
+        invoices_storage,
         endpoint='invoices.download',
         validators=[
-            MimeType(
-                MimeType.OFFICE
+            Extension(
+                Extension.OFFICE
             ),
         ]
     )
@@ -280,6 +292,29 @@ Flask-Uploader
         rewrite ^/media/(.*)$ /$1 break;
         root /path/to/uploader_root_dir;
     }
+
+Удаление файла
+--------------
+
+По-умолчанию удаление файла недоступно, это сделано из соображений безопасности.
+Используйте представление :py:class:`~flask_uploader.views.DestroyView`
+для описания конечной точки:
+
+.. code-block:: python
+
+    # Continuation of the routes/invoices.py module
+
+    from flask_uploader.views import DownloadView
+
+
+    class DeleteInvoiceView(DestroyView):
+        decorators = [login_required]
+        uploader_or_name = invoices_uploader
+
+
+    delete_endpoint = DeleteInvoiceView.as_view('remove')
+
+    bp.add_url_rule('/remove/<path:lookup>', view_func=delete_endpoint)
 
 
 .. |PyPI| image:: https://img.shields.io/pypi/v/flask-uploader.svg
