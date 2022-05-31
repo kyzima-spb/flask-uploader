@@ -154,6 +154,9 @@ class FileSize:
         if isinstance(max_size, str):
             max_size = self.to_bytes(max_size)
 
+        if min_size > max_size:
+            raise ValueError('The minimum size must be less than the maximum size.')
+
         if not message:
             message = 'The size of the uploaded file must be between %(min_size)s and %(max_size)s.'
 
@@ -166,7 +169,7 @@ class FileSize:
         size = storage.stream.tell()
         storage.stream.seek(0)
 
-        if size > self.max_size:
+        if not(self.min_size <= size <= self.max_size):
             raise ValidationError(self.format_message(self.message))
 
     def format_message(self, message: str, **kwargs: t.Any) -> str:
