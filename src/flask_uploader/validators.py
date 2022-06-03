@@ -181,15 +181,18 @@ class FileSize:
 
     def to_bytes(self, size: str) -> float:
         """Returns the maximum file size in bytes from a human readable string."""
-        match = re.search(r'^(\d+(?:\.\d+)?)([kmgtp])b?$', size, re.I)
+        match = re.search(r'^(\d+(?:\.\d+)?)([kmgtp]?)b?$', size, re.I)
 
         if match is None:
             raise ValueError(f'Valid value is number with unit: {self._units}')
 
-        k = self._units.index(match.group(2).lower())
         value = float(match.group(1))
 
-        return value * 1024.0 ** k
+        if match.group(2):
+            k = self._units.index(match.group(2).lower())
+            return value * 1024.0 ** k
+
+        return value
 
     def to_human(self, size: float) -> str:
         """Returns the file size in human readable format."""
