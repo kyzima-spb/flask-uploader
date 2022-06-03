@@ -25,8 +25,6 @@ __all__ = (
     'file_size',
     'ImageSize',
     'image_size',
-    'MimeType',
-    'mime_type',
 )
 
 
@@ -62,7 +60,6 @@ Extension = extension = wrap_validator(validators.Extension)
 FileRequired = file_required = DataRequired
 FileSize = file_size = wrap_validator(validators.FileSize)
 ImageSize = image_size = wrap_validator(validators.ImageSize)
-MimeType = mime_type = wrap_validator(validators.MimeType)
 
 
 class UploaderField(FileField):  # type: ignore
