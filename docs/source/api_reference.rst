@@ -209,7 +209,7 @@ WTForms Reference
 .. autofunction:: flask_uploader.contrib.wtf.file_is_selected
 .. autofunction:: flask_uploader.contrib.wtf.wrap_validator
 
-.. autoclass:: flask_uploader.contrib.wtf.UploaderField
+.. autoclass:: flask_uploader.contrib.wtf.UploadField
     :members:
     :undoc-members:
     :show-inheritance:

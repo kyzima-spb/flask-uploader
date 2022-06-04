@@ -3,8 +3,7 @@ from flask_uploader.contrib.pymongo import GridFSStorage
 from flask_uploader.contrib.wtf import (
     Extension,
     FileSize,
-    MimeType,
-    UploaderField,
+    UploadField,
 )
 from flask_wtf import FlaskForm
 from wtforms.fields import (
@@ -45,10 +44,10 @@ class BookForm(FlaskForm):
         Extension(Extension.IMAGES),
         FileSize('1m'),
     ])
-    file = UploaderField(
+    file = UploadField(
         uploader=Uploader('books', GridFSStorage(mongo, 'books')),
         validators=[
             DataRequired(),
-            MimeType(MimeType.BOOKS),
+            Extension(Extension.BOOKS),
         ],
     )

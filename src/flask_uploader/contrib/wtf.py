@@ -25,6 +25,7 @@ __all__ = (
     'file_size',
     'ImageSize',
     'image_size',
+    'UploadField',
 )
 
 
@@ -62,7 +63,7 @@ FileSize = file_size = wrap_validator(validators.FileSize)
 ImageSize = image_size = wrap_validator(validators.ImageSize)
 
 
-class UploaderField(FileField):  # type: ignore
+class UploadField(FileField):  # type: ignore
     """
     A form field for uploading a file and saving it using the uploader.
     """
