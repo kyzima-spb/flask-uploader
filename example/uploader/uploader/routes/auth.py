@@ -2,14 +2,17 @@ from flask import (
     Blueprint,
     flash,
     redirect,
+    render_template,
     request,
 )
 from flask_login import (
+    current_user,
     login_user,
     logout_user,
+    login_required,
 )
 
-from ..forms import LoginForm
+from ..forms import LoginForm, ProfileForm
 from ..models import User, Manager
 
 
@@ -40,6 +43,22 @@ def login():
 
 
 @bp.route('/logout')
+@login_required
 def logout():
     logout_user()
     return redirect(request.referrer)
+
+
+@bp.route('/profile', methods=['GET', 'POST'])
+@login_required
+def profile():
+    user = current_user
+    form = ProfileForm(obj=user)
+
+    if form.validate_on_submit():
+        form.populate_obj(user)
+        user_manager.save(user)
+        flash('Profile saved successfully.')
+        return redirect(request.url)
+
+    return render_template('profile.html', form=form)

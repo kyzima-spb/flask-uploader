@@ -12,7 +12,7 @@ from flask_uploader import Uploader
 from flask_uploader.exceptions import UploadNotAllowed
 from flask_uploader.storages import FileSystemStorage, iter_files
 from flask_uploader.validators import (
-    MimeType,
+    Extension,
     ImageSize,
     FileRequired,
     FileSize,
@@ -28,7 +28,7 @@ photos_uploader = Uploader(
     validators=[
         FileRequired(),
         FileSize('10Mb'),
-        MimeType(MimeType.IMAGES),
+        Extension(Extension.IMAGES),
         ImageSize(max_width=1920, max_height=1080),
     ]
 )

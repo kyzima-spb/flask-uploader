@@ -15,7 +15,6 @@ __all__ = (
     'FileRequired',
     'FileSize',
     'ImageSize',
-    'MimeType',
     'TValidator',
 )
 
@@ -116,7 +115,7 @@ class FileRequired:
         self.message = message
 
     def __call__(self, storage: FileStorage) -> None:
-        if not storage.filename:
+        if not storage:
             raise ValidationError(self.message % {'filename': storage.name})
 
 
@@ -130,6 +129,7 @@ class FileSize:
     def __init__(
         self,
         max_size: t.Union[float, str],
+        min_size: t.Union[float, str] = 0,
         message: t.Optional[str] = None,
     ) -> None:
         """
@@ -139,15 +139,27 @@ class FileSize:
                 Can be an integer number of bytes, or a string with a size suffix:
                 b, k, m, g, t, p.
                 For example: 512m or 512Mb
+            min_size (float|str):
+                The minimum file size.
+                Can be an integer number of bytes, or a string with a size suffix:
+                b, k, m, g, t, p.
+                For example: 512m or 512Mb
             message (str):
                 Error message to raise in case of a validation error.
         """
+        if isinstance(min_size, str):
+            min_size = self.to_bytes(min_size)
+
         if isinstance(max_size, str):
             max_size = self.to_bytes(max_size)
 
-        if not message:
-            message = 'The size of the uploaded file cannot be more than %(max_size)s.'
+        if min_size > max_size:
+            raise ValueError('The minimum size must be less than the maximum size.')
 
+        if not message:
+            message = 'The size of the uploaded file must be between %(min_size)s and %(max_size)s.'
+
+        self.min_size = min_size
         self.max_size = max_size
         self.message = message
 
@@ -156,32 +168,46 @@ class FileSize:
         size = storage.stream.tell()
         storage.stream.seek(0)
 
-        if size > self.max_size:
-            raise ValidationError(self.message % {'max_size': self.to_human()})
+        if not(self.min_size <= size <= self.max_size):
+            raise ValidationError(self.format_message(self.message))
 
-    def to_bytes(self, max_size: str) -> float:
+    def format_message(self, message: str, **kwargs: t.Any) -> str:
+        return message % {
+            'min_size': self.to_human(self.min_size),
+            'max_size': self.to_human(self.max_size),
+            **kwargs,
+        }
+
+    def to_bytes(self, size: str) -> float:
         """Returns the maximum file size in bytes from a human readable string."""
-        match = re.search(r'^(\d+(?:\.\d+)?)([kmgtp])b?$', max_size, re.I)
+        match = re.search(r'^(\d+(?:\.\d+)?)([kmgtp]?)b?$', size, re.I)
 
         if match is None:
             raise ValueError(f'Valid value is number with unit: {self._units}')
 
-        k = self._units.index(match.group(2).lower())
         value = float(match.group(1))
 
-        return value * 1024.0 ** k
+        if match.group(2):
+            k = self._units.index(match.group(2).lower())
+            return value * 1024.0 ** k
 
-    def to_human(self) -> str:
-        """Returns the maximum file size in human readable format."""
+        return value
+
+    def to_human(self, size: float) -> str:
+        """Returns the file size in human readable format."""
         for k, unit in enumerate(self._units):
-            value = self.max_size / 1024 ** k
+            value = size / 1024 ** k
             if value < 1024:
                 unit = f'{unit}b' if k > 0 else unit
                 return f'{value:3.1f}{unit.title()}'
-        return f'{self.max_size:3.1f}'
+        return f'{size:3.1f}'
 
 
 class ImageSize:
+    """
+    The validator checks the image size in pixels.
+    """
+
     EXACT_SIZE = 'Image size should be %(min_width)dx%(min_height)dpx.'
     EXACT_WIDTH = 'Image width should be equal %(min_width)dpx.'
     EXACT_HEIGHT = 'Image height should be equal %(min_height)dpx.'
@@ -251,70 +277,3 @@ class ImageSize:
             raise ValidationError(
                 self.format_message(message, width=width, height=height)
             )
-
-
-class MimeType:
-    """
-    The validator checks the media type passed in the Content-Type HTTP header.
-
-    This is a weak type of validation.
-    """
-
-    # This just contains plain text files
-    TEXT = frozenset((
-        formats.TXT.mimetype,
-    ))
-
-    # This contains various office document formats
-    MS_OFFICE = frozenset(f.mimetype for f in formats.MS_OFFICE)
-    OPEN_OFFICE = frozenset(f.mimetype for f in formats.OPEN_OFFICE)
-    WPS_OFFICE = frozenset(f.mimetype for f in formats.WPS_OFFICE)
-    OFFICE = MS_OFFICE | OPEN_OFFICE | WPS_OFFICE | {
-        f.mimetype for f in formats.OTHER_OFFICE
-    }
-
-    # This contains electronic book formats
-    EDOCUMENTS = frozenset(f.mimetype for f in formats.EDOCUMENTS)
-    EBOOKS = frozenset(f.mimetype for f in formats.EBOOKS)
-    BOOKS = EDOCUMENTS | EBOOKS
-
-    # This contains basic image types that are viewable from most browsers
-    IMAGES = frozenset(f.mimetype for f in formats.IMAGES)
-
-    # This contains audio file types
-    AUDIO = frozenset(f.mimetype for f in formats.AUDIO)
-
-    # This is for structured data files
-    DATA = frozenset(f.mimetype for f in formats.DATA)
-
-    # This contains various types of scripts
-    SCRIPTS = frozenset(f.mimetype for f in formats.SCRIPTS)
-
-    # This contains archive and compression formats
-    ARCHIVES = frozenset(f.mimetype for f in formats.ARCHIVES)
-
-    # This contains non executable source files
-    # those which need to be compiled or assembled to binaries to be used.
-    # They are generally safe to accept, as without an existing RCE vulnerability,
-    # they cannot be compiled, assembled, linked, or executed.
-    SOURCE = frozenset(f.mimetype for f in formats.SOURCE)
-
-    # Shared libraries and executable file formats
-    EXECUTABLES = frozenset(f.mimetype for f in formats.EXECUTABLES)
-
-    def __init__(
-        self,
-        mime_types: t.Union[set[str], frozenset[str]],
-        message: t.Optional[str] = None,
-    ) -> None:
-        self.mime_types = mime_types
-        self.message = message
-
-    def __call__(self, storage: FileStorage) -> None:
-        if storage.mimetype is None:
-            message = self.message or 'There is no HTTP Content-Type header.'
-            raise ValidationError(message)
-
-        if storage.mimetype not in self.mime_types:
-            message = self.message or 'This file type is not allowed to be uploaded.'
-            raise ValidationError(message)

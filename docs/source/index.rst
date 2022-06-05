@@ -21,8 +21,10 @@ Flask-Uploader
 Или установите последнюю тестовую версию, которая может и будет содержать баги =)
 Она автоматически собирается и публикуется на `test.pypi.org`_::
 
-    pip install -i https://test.pypi.org/simple/ Flask-Uploader
-
+    pip install \
+        -i https://test.pypi.org/simple/ \
+        -i https://pypi.python.org/simple \
+            Flask-Uploader
 
 Конфигурация
 ------------

@@ -25,8 +25,7 @@ __all__ = (
     'file_size',
     'ImageSize',
     'image_size',
-    'MimeType',
-    'mime_type',
+    'UploadField',
 )
 
 
@@ -62,10 +61,9 @@ Extension = extension = wrap_validator(validators.Extension)
 FileRequired = file_required = DataRequired
 FileSize = file_size = wrap_validator(validators.FileSize)
 ImageSize = image_size = wrap_validator(validators.ImageSize)
-MimeType = mime_type = wrap_validator(validators.MimeType)
 
 
-class UploaderField(FileField):  # type: ignore
+class UploadField(FileField):  # type: ignore
     """
     A form field for uploading a file and saving it using the uploader.
     """
@@ -99,6 +97,7 @@ class UploaderField(FileField):  # type: ignore
                 Generate absolute URL. Default to ``False``.
         """
         super().__init__(label, validators, **kwargs)
+        self.data: t.Optional[t.Union[str, FileStorage]] = None
         self.uploader = uploader
         self.overwrite = overwrite
         self.return_url = return_url
@@ -116,8 +115,8 @@ class UploaderField(FileField):  # type: ignore
             This is a destructive operation. If `obj.<name>` already exists,
             it will be overridden. Use with caution.
         """
-        lookup = self.save()
-        setattr(obj, name, self.data if lookup is None else lookup)
+        self.save()
+        super().populate_obj(obj, name)
 
     def post_validate(self, form: Form, validation_stopped: bool) -> None:
         """Runs validators from the uploader."""
@@ -127,18 +126,16 @@ class UploaderField(FileField):  # type: ignore
             except exceptions.ValidationError as err:
                 raise ValidationError(str(err)) from err
 
-    def save(self) -> t.Optional[str]:
+    def save(self) -> None:
         """Saves the uploaded file."""
-        if not file_is_selected(self):
-            return None
+        if file_is_selected(self):
+            lookup = self.uploader.save(
+                storage=self.data,  # type: ignore
+                overwrite=self.overwrite,
+                skip_validation=True,
+            )
 
-        lookup = self.uploader.save(
-            storage=self.data,
-            overwrite=self.overwrite,
-            skip_validation=True,
-        )
+            if self.return_url:
+                lookup = self.uploader.get_url(lookup, external=self.external)
 
-        if self.return_url:
-            lookup = self.uploader.get_url(lookup, external=self.external)
-
-        return lookup
+            self.data = lookup

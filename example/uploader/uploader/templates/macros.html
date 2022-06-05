@@ -27,3 +27,14 @@
     </table>
   </div>
 {% endmacro %}
+
+
+{% macro render_form_field(field) %}
+  {{ field.label(class='form-label') }}
+  <div class="input-group">
+    {{ field(class='form-control is-invalid' if field.errors else 'form-control') }}
+    <div class="invalid-feedback">
+      {{ field.errors | join(',') }}
+    </div>
+  </div>
+{% endmacro %}

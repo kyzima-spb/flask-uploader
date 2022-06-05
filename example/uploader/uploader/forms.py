@@ -3,9 +3,9 @@ from flask_uploader.contrib.pymongo import GridFSStorage
 from flask_uploader.contrib.wtf import (
     Extension,
     FileSize,
-    MimeType,
-    UploaderField,
+    UploadField,
 )
+from flask_uploader.storages import FileSystemStorage
 from flask_wtf import FlaskForm
 from wtforms.fields import (
     StringField,
@@ -35,6 +35,18 @@ class LoginForm(FlaskForm):
     password = PasswordField(validators=[DataRequired(), Length(min=1)])
 
 
+class ProfileForm(FlaskForm):
+    firstname = StringField(validators=[Length(min=1)])
+    lastname = StringField(validators=[Length(min=1)])
+    avatar = UploadField(
+        uploader=Uploader('avatars', FileSystemStorage(dest='avatars')),
+        overwrite=True,
+        validators=[
+            Extension(Extension.IMAGES),
+        ]
+    )
+
+
 class BookForm(FlaskForm):
     title = StringField(validators=[
         DataRequired(),
@@ -45,10 +57,10 @@ class BookForm(FlaskForm):
         Extension(Extension.IMAGES),
         FileSize('1m'),
     ])
-    file = UploaderField(
+    file = UploadField(
         uploader=Uploader('books', GridFSStorage(mongo, 'books')),
         validators=[
             DataRequired(),
-            MimeType(MimeType.BOOKS),
+            Extension(Extension.BOOKS),
         ],
     )

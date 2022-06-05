@@ -60,10 +60,38 @@
           {% endif %}
         </ul>
         {% if current_user.is_authenticated %}
-          <span class="navbar-text me-2">
-            {{ current_user.username }}
-          </span>
-          <a class="btn btn-outline-success" href="{{ url_for('site.auth.logout') }}">Logout</a>
+          <div class="dropdown">
+            <button
+              class="btn btn-outline-primary dropdown-toggle"
+              type="button"
+              id="dropdownMenuButton1"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              {% if current_user.avatar %}
+                <img
+                  class="rounded-circle"
+                  width="28"
+                  height="28"
+                  src="{{ media_url('avatars', current_user.avatar) }}"
+                  alt=""
+                >
+              {% endif %}
+              {{ current_user.username }}
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+              <li>
+                <a class="dropdown-item" href="{{ url_for('site.auth.profile') }}">
+                  Edit profile
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="{{ url_for('site.auth.logout') }}">
+                  Logout
+                </a>
+              </li>
+            </ul>
+          </div>
         {% else %}
           <form class="d-flex" action="{{ url_for('site.auth.login') }}" method="post">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
