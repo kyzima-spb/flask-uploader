@@ -13,31 +13,13 @@
       <form method="post" enctype="multipart/form-data" novalidate>
         {{ form.hidden_tag() }}
         <div class="mb-3">
-          {{ form.title.label(class='form-label') }}
-          <div class="input-group">
-            {{ form.title(class='form-control is-invalid' if form.title.errors else 'form-control') }}
-            <div class="invalid-feedback">
-              {{ form.title.errors | join(',') }}
-            </div>
-          </div>
+          {{ macro.render_form_field(form.title) }}
         </div>
         <div class="mb-3">
-          {{ form.cover.label(class='form-label') }}
-          <div class="input-group">
-            {{ form.cover(class='form-control is-invalid' if form.cover.errors else 'form-control') }}
-            <div class="invalid-feedback">
-              {{ form.cover.errors | join(',') }}
-            </div>
-          </div>
+          {{ macro.render_form_field(form.cover) }}
         </div>
         <div class="mb-3">
-          {{ form.file.label(class='form-label') }}
-          <div class="input-group">
-            {{ form.file(class='form-control is-invalid' if form.file.errors else 'form-control') }}
-            <div class="invalid-feedback">
-              {{ form.file.errors | join(',') }}
-            </div>
-          </div>
+          {{ macro.render_form_field(form.file) }}
         </div>
         <button type="submit" class="btn btn-primary">Submit</button>
       </form>

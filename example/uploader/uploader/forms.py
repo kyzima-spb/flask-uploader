@@ -5,6 +5,7 @@ from flask_uploader.contrib.wtf import (
     FileSize,
     UploadField,
 )
+from flask_uploader.storages import FileSystemStorage
 from flask_wtf import FlaskForm
 from wtforms.fields import (
     StringField,
@@ -32,6 +33,18 @@ class MongoFileField(FileField):
 class LoginForm(FlaskForm):
     username = StringField(validators=[DataRequired(), Length(min=1)])
     password = PasswordField(validators=[DataRequired(), Length(min=1)])
+
+
+class ProfileForm(FlaskForm):
+    firstname = StringField(validators=[Length(min=1)])
+    lastname = StringField(validators=[Length(min=1)])
+    avatar = UploadField(
+        uploader=Uploader('avatars', FileSystemStorage(dest='avatars')),
+        overwrite=True,
+        validators=[
+            Extension(Extension.IMAGES),
+        ]
+    )
 
 
 class BookForm(FlaskForm):

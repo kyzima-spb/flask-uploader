@@ -90,6 +90,9 @@ class User(UserMixin, Model):
     username: str = ''
     password: str = ''
     is_active: bool = True
+    firstname: str = ''
+    lastname: str = ''
+    avatar: str = ''
 
     @property
     def id(self):

@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% import 'macros.html' as macro with context %}
+
+{% block main %}
+  <div class="row">
+    <div class="col">
+      <h1 class="my-4">Profile</h1>
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col">
+      <form method="post" enctype="multipart/form-data" novalidate>
+        {{ form.hidden_tag() }}
+        <div class="mb-3">
+          {{ macro.render_form_field(form.firstname) }}
+        </div>
+        <div class="mb-3">
+          {{ macro.render_form_field(form.lastname) }}
+        </div>
+        <div class="mb-3">
+          {{ macro.render_form_field(form.avatar) }}
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
+    </div>
+  </div>
+{% endblock main %}

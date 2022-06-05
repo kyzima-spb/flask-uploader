@@ -98,3 +98,83 @@
 Поле загрузчика
 ---------------
 
+``Flask-Uploader`` реализует элемент формы :py:class:`~flask_uploader.contrib.wtf.UploadField`.
+Конструктор принимает обязательный именованный аргумент ``uploader``
+- экземпляр :ref:`загрузчика <index:Создание загрузчика>`,
+который используется для сохранения файла и установки значения атрибута модели.
+
+Рассмотрим пример с формой редактирования профиля пользователя:
+
+.. code-block:: python
+
+    from flask_wtf import FlaskForm
+    from flask_uploader import Uploader
+    from flask_uploader.contrib.wtf import (
+        Extension,
+        UploadField,
+    )
+    from flask_uploader.storages import FileSystemStorage
+    from wtforms.fields import StringField
+    from wtforms.validators import Length
+
+
+    class ProfileForm(FlaskForm):
+        firstname = StringField(validators=[Length(min=1)])
+        lastname = StringField(validators=[Length(min=1)])
+        avatar = UploadField(
+            uploader=Uploader(
+                'avatars', FileSystemStorage(dest='avatars')
+            ),
+            overwrite=True,
+            validators=[
+                Extension(Extension.IMAGES),
+            ]
+        )
+
+Мы создали загрузчик с именем ``avatars``, который будет сохранять загруженную пользователем
+аватарку в файловой системе. После сохранения файла, атрибуту ``avatar``
+будет присвоен поисковый идентификатор, который можно использовать в аргументе методов
+:py:meth:`~flask_uploader.core.Uploader.load` или :py:meth:`~flask_uploader.core.Uploader.remove`:
+
+.. code-block:: python
+
+    form = ProfileForm()
+
+    if form.validate_on_submit():
+        print(type(form.avatar.data).__name__)  # FileStorage
+        form.avatar.save()
+        print(type(form.avatar.data).__name__)  # str
+
+Вызывать метод :py:meth:`~flask_uploader.contrib.wtf.UploadField.save` вручную не обязательно,
+в большинстве случаев вы используете метод :py:meth:`~wtforms.form.BaseForm.populate_obj`
+для присвоения значений полей формы атрибутам модели,
+в этот момент для всех полей :py:class:`~flask_uploader.contrib.wtf.UploadField`
+будет вызван метод :py:meth:`~flask_uploader.contrib.wtf.UploadField.save`:
+
+.. code-block:: python
+
+    from flask import Blueprint
+    from flask_login import current_user, login_required
+
+
+    bp = Blueprint('auth', __name__)
+
+
+    @bp.route('/profile', methods=['GET', 'POST'])
+    @login_required
+    def profile():
+        user = current_user
+        form = ProfileForm(obj=user)
+
+        if form.validate_on_submit():
+            form.populate_obj(user)
+            # Saving a user
+            return redirect(request.url)
+
+        return render_template('profile.html', form=form)
+
+Конструктору :py:class:`~flask_uploader.contrib.wtf.UploadField` можно передать и другие именованные аргументы:
+
+* ``overwrite`` - перезаписать существующий файл, по-умолчанию :py:data:`False`;
+* ``return_url`` - после сохранения присвоить URL-адрес файла, по-умолчанию :py:data:`False`;
+* ``external`` - создать абсолютный URL, по-умолчанию :py:data:`False`.
