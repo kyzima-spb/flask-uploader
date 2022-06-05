@@ -263,17 +263,13 @@ Amazon S3
 
 .. code-block:: python
 
-    from datetime import datetime
+    from uuid import uuid4
 
-    from flask_uploader.utils import get_extension
     from werkzeug.datastructures import FileStorage
 
 
-    def timestamp_strategy(storage: FileStorage) -> str:
-        return '%s%s' % (
-            datetime.now().strftime('%Y-%m-%d-%H-%M-%S'),
-            get_extension(storage.filename) if storage.filename else ''
-        )
+    def uuid_strategy(storage: FileStorage) -> str:
+        return str(uuid4())
 
 В момент создания экземпляра хранилища в конструктор передайте аргумент ``filename_strategy``:
 
@@ -283,17 +279,15 @@ Amazon S3
 
     storage = FileSystemStorage(
         dest='files',
-        filename_strategy=timestamp_strategy
+        filename_strategy=uuid_strategy
     )
-
-``Flask-Uploader`` имеет готовую реализацию этой стратегии с возможностью указать формат даты/времени:
-:py:class:`flask_uploader.storages.TimestampStrategy`.
 
 Метод :py:meth:`~flask_uploader.storages.AbstractStorage.save` перед сохранением проверит:
 
 1. что сгенерированное имя не пустая строка, иначе выбросит исключение
    :py:class:`~flask_uploader.exceptions.InvalidLookup`;
-2. что файл существует и если явно не передан аргумент ``overwrite``,
+2. что сгенерированное имя имеет расширение, иначе добавит его автоматически;
+3. что файл существует и если явно не передан аргумент ``overwrite``,
    добавит к имени суффикс ``_N`` (изменить суффикс нельзя).
 
 Это верно для любой стратегии.
