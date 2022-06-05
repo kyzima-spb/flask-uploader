@@ -70,16 +70,14 @@ class HashedFilenameStrategy:
         self.max_split = max_split
 
     def __call__(self, storage: FileStorage) -> str:
-        hash = md5stream(t.cast(t.BinaryIO, storage.stream), self.buffer_size)
-        *folder, name = split_pairs(
-            hash, step=self.step, max_split=self.max_split
-        )
-        ext = ''
-
-        if storage.filename is not None:
-            ext = get_extension(storage.filename)
-
-        return os.path.join(*folder, name) + ext
+        return os.path.join(*split_pairs(
+            md5stream(
+                t.cast(t.BinaryIO, storage.stream),
+                self.buffer_size,
+            ),
+            step=self.step,
+            max_split=self.max_split,
+        ))
 
 
 class TimestampStrategy:
@@ -106,10 +104,9 @@ class TimestampStrategy:
 
     def __call__(self, storage: FileStorage) -> str:
         now = datetime.now()
-        return '%s%s' % (
-            int(now.timestamp()) if self.as_int else now.strftime(self.fmt),
-            get_extension(storage.filename) if storage.filename else ''
-        )
+        if self.as_int:
+            return '%d' % now.timestamp()
+        return now.strftime(self.fmt)
 
 
 class AbstractStorage(metaclass=ABCMeta):
@@ -136,6 +133,11 @@ class AbstractStorage(metaclass=ABCMeta):
 
         if not filename:
             raise InvalidLookup('The filename cannot be empty.')
+
+        ext = get_extension(filename)
+
+        if not ext and storage.filename:
+            filename += get_extension(storage.filename)
 
         return filename
 
