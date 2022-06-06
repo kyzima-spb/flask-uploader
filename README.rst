@@ -3,7 +3,7 @@ Flask-Uploader
 
 |PyPI| |LICENCE| |STARS| |DOCS|
 
-**Flask_uploader** - file uploader for Flask with flexible extensibility.
+**Flask-Uploader** - file uploader for Flask with flexible extensibility.
 
 How to use can be found in the documentation_.
 Documentation is in Russian only, use a translator for other languages.
