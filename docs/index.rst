@@ -6,6 +6,8 @@ Flask-Uploader
 
 |PyPI| |LICENCE| |STARS| |DOCS|
 
+|DOWNLOADS| |DOWNLOADS_M| |DOWNLOADS_W|
+
 **Flask-Uploader** - загрузчик файлов для Flask с гибкой возможностью расширения.
 
 Быстрый старт
@@ -333,6 +335,15 @@ Flask-Uploader
 .. |DOCS| image:: https://readthedocs.org/projects/flask-uploader/badge/?version=latest
    :target: https://flask-uploader.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
+
+.. |DOWNLOADS| image:: https://pepy.tech/badge/flask-uploader
+   :target: https://pepy.tech/project/flask-uploader
+
+.. |DOWNLOADS_M| image:: https://pepy.tech/badge/flask-uploader/month
+   :target: https://pepy.tech/project/flask-uploader)
+
+.. |DOWNLOADS_W| image:: https://pepy.tech/badge/flask-uploader/week
+   :target: https://pepy.tech/project/flask-uploader)
 
 .. _test.pypi.org: https://test.pypi.org/project/flask-uploader/
 .. _правилами разработки расширений: https://flask.palletsprojects.com/en/2.1.x/extensiondev/#initializing-extensions

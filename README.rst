@@ -3,6 +3,12 @@ Flask-Uploader
 
 |PyPI| |LICENCE| |STARS| |DOCS|
 
+**Flask_uploader** - file uploader for Flask with flexible extensibility.
+
+How to use can be found in the documentation_.
+Documentation is in Russian only, use a translator for other languages.
+
+See the usage example_ for more understanding.
 
 .. |PyPI| image:: https://img.shields.io/pypi/v/flask-uploader.svg
    :target: https://pypi.org/project/flask-uploader/
@@ -18,3 +24,6 @@ Flask-Uploader
 .. |DOCS| image:: https://readthedocs.org/projects/flask-uploader/badge/?version=latest
    :target: https://flask-uploader.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
+
+.. _documentation: https://flask-uploader.readthedocs.io/en/latest/
+.. _example: https://github.com/kyzima-spb/flask-uploader/tree/master/example/uploader
