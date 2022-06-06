@@ -331,6 +331,7 @@ Flask-Uploader
 
 .. |STARS| image:: https://img.shields.io/github/stars/kyzima-spb/flask-uploader.svg
    :target: https://github.com/kyzima-spb/flask-uploader/stargazers
+   :alt: GitHub stars
 
 .. |DOCS| image:: https://readthedocs.org/projects/flask-uploader/badge/?version=latest
    :target: https://flask-uploader.readthedocs.io/ru/latest/?badge=latest
