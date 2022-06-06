@@ -1,0 +1,12 @@
+version: "3.7"
+
+services:
+  sphinx:
+    image: kyzimaspb/sphinx
+    environment:
+      EXTRA: aws pymongo
+    restart: unless-stopped
+    ports:
+      - 8000:8000
+    volumes:
+      - .:/package
