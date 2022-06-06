@@ -122,7 +122,7 @@ class UploadField(FileField):  # type: ignore
         """Runs validators from the uploader."""
         if not validation_stopped and file_is_selected(self):
             try:
-                self.uploader.validate(self.data)
+                self.uploader.validate(self.data)  #type: ignore
             except exceptions.ValidationError as err:
                 raise ValidationError(str(err)) from err
 

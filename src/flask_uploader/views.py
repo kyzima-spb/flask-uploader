@@ -99,12 +99,12 @@ class DownloadView(BaseView):
 
     def send_file(self, f: File) -> ResponseReturnValue:
         """Send the contents of a given file to the client."""
-        return send_file(
+        return t.cast(ResponseReturnValue, send_file(
             path_or_file=f.path_or_file,
             attachment_filename=f.filename,
             mimetype=f.mimetype,
             as_attachment=True,
-        )
+        ))
 
     def get(self, lookup: str, name: t.Optional[str] = None) -> ResponseReturnValue:
         if name is None:
