@@ -333,7 +333,7 @@ Flask-Uploader
    :target: https://github.com/kyzima-spb/flask-uploader/stargazers
 
 .. |DOCS| image:: https://readthedocs.org/projects/flask-uploader/badge/?version=latest
-   :target: https://flask-uploader.readthedocs.io/en/latest/?badge=latest
+   :target: https://flask-uploader.readthedocs.io/ru/latest/?badge=latest
    :alt: Documentation Status
 
 .. |DOWNLOADS| image:: https://pepy.tech/badge/flask-uploader

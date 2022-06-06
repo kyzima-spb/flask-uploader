@@ -22,8 +22,8 @@ See the usage example_ for more understanding.
    :target: https://github.com/kyzima-spb/flask-uploader/stargazers
 
 .. |DOCS| image:: https://readthedocs.org/projects/flask-uploader/badge/?version=latest
-   :target: https://flask-uploader.readthedocs.io/en/latest/?badge=latest
+   :target: https://flask-uploader.readthedocs.io/ru/latest/?badge=latest
    :alt: Documentation Status
 
-.. _documentation: https://flask-uploader.readthedocs.io/en/latest/
+.. _documentation: https://flask-uploader.readthedocs.io/ru/latest/
 .. _example: https://github.com/kyzima-spb/flask-uploader/tree/master/example/uploader
