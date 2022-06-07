@@ -8,6 +8,8 @@ Flask-Uploader
 
 |DOWNLOADS| |DOWNLOADS_M| |DOWNLOADS_W|
 
+Document version: |version| |release|
+
 **Flask-Uploader** - загрузчик файлов для Flask с гибкой возможностью расширения.
 
 Быстрый старт

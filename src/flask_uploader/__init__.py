@@ -1,4 +1,8 @@
 from __future__ import annotations
+try:
+    from importlib.metadata import version
+except ImportError:
+    from importlib_metadata import version
 import typing as t
 
 from flask import Blueprint, Flask
@@ -11,6 +15,7 @@ __all__ = (
     'init_uploader',
     'Uploader',
 )
+__version__ = version(__package__)
 
 
 def init_uploader(app: Flask) -> None:

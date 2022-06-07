@@ -17,12 +17,22 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'Flask-Uploader'
-copyright = '2022, Kirill Vercetti'
-author = 'Kirill Vercetti'
+from datetime import date
+try:
+    from importlib.metadata import metadata
+except ImportError:
+    from importlib_metadata import metadata
+import flask_uploader
+
+
+meta_info = metadata(flask_uploader.__name__)
+
+project = meta_info['Name']
+copyright = '{}, {}'.format(date.today().year, meta_info['Author'])
+author = meta_info['Author']
 
 # The full version, including alpha/beta/rc tags
-release = '0.1.0'
+release = flask_uploader.__version__
 
 
 # -- General configuration ---------------------------------------------------
@@ -82,9 +92,9 @@ html_theme_options = {
     'show_related': True,
     'show_relbar_top': False,
     'show_relbar_bottom': True,
-    # 'logo': 'logo.png',
+    'logo': 'logo.svg',
     'github_user': 'kyzima-spb',
-    'github_repo': 'flask-uploader',
+    'github_repo': meta_info['Name'].lower(),
     'github_button': True,
     'github_type': 'star',
     'github_banner': True,

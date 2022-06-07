@@ -10,6 +10,17 @@ Documentation is in Russian only, use a translator for other languages.
 
 See the usage example_ for more understanding.
 
+Development
+-----------
+
+Run mypy::
+
+    docker-compose exec -w /package -u 1000:1000 sphinx mypy
+
+Run pytest::
+
+    docker-compose exec -w /package -u 1000:1000 sphinx pytest
+
 .. |PyPI| image:: https://img.shields.io/pypi/v/flask-uploader.svg
    :target: https://pypi.org/project/flask-uploader/
    :alt: Latest Version
