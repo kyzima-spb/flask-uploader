@@ -1,7 +1,5 @@
 [build-system]
-requires = ["setuptools>=45", "wheel", "setuptools_scm>=6.2"]
+requires = ["setuptools>=50", "wheel", "setuptools_scm>=6.2"]
 
 [tool.setuptools_scm]
-write_to = "version.txt"
-write_to_template = "{version}"
 local_scheme = "no-local-version"
