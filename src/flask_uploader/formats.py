@@ -198,7 +198,10 @@ def get_format(path_or_url: str) -> t.Optional[FileFormat]:
     )
 
 
-def guess_type(path_or_url: str, use_external: bool = False) -> t.Optional[str]:
+def guess_type(
+    path_or_url: str,
+    use_external: bool = False,
+) -> t.Optional[str]:
     """
     Returns a mime type for the given file or URL.
 

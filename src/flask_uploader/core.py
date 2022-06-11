@@ -24,7 +24,8 @@ class UploaderMeta(type):
     """
     File uploader metaclass.
 
-    Caches instances under the unique name passed in the first argument to the constructor
+    Caches instances under the unique name passed
+    in the first argument to the constructor
     and prevents instantiation of uploaders with the existing name.
     """
     def __init__(
@@ -38,7 +39,7 @@ class UploaderMeta(type):
         if not hasattr(cls, '_cache'):
             cls._cache: Cache = weakref.WeakValueDictionary()
 
-    def __call__( # type: ignore
+    def __call__(  # type: ignore
         cls,
         name: str,
         storage: AbstractStorage,
@@ -52,7 +53,7 @@ class UploaderMeta(type):
         if endpoint is not None:
             use_auto_route = False
 
-        obj: Uploader = super().__call__( # without obj lost reference
+        obj: Uploader = super().__call__(  # without obj lost reference
             name,
             storage,
             validators=validators,
@@ -92,11 +93,16 @@ class Uploader(metaclass=UploaderMeta):
     ) -> None:
         """
         Arguments:
-            name (str): The unique name of the uploader.
-            storage (AbstractStorage): Storage instance for file manipulation.
-            validators (TValidator): List of called objects for validating the uploaded file.
-            endpoint (str): The name of the endpoint to generate the URL.
-            use_auto_route (bool): Allows downloading a file at the default URL.
+            name (str):
+                The unique name of the uploader.
+            storage (AbstractStorage):
+                Storage instance for file manipulation.
+            validators (TValidator):
+                List of called objects for validating the uploaded file.
+            endpoint (str):
+                The name of the endpoint to generate the URL.
+            use_auto_route (bool):
+                Allows downloading a file at the default URL.
         """
         if validators is None:
             validators = []
@@ -133,7 +139,8 @@ class Uploader(metaclass=UploaderMeta):
 
         if not self.use_auto_route:
             raise RuntimeError(
-                'It is not possible to return the URL because public access is denied.'
+                'It is not possible to return the URL'
+                ' because public access is denied.'
             )
 
         return url_for(

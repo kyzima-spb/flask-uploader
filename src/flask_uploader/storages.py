@@ -40,13 +40,16 @@ class File(t.NamedTuple):
 
 class HashedFilenameStrategy:
     """
-    A strategy that generates a name by calculating a hash of the contents of a file
-    and splitting it into the specified number of parts of the specified length.
+    A strategy that generates a name
+    by calculating a hash of the contents of a file
+    and splitting it into the specified number
+    of parts of the specified length.
 
     Solves the problem of storing many files on the hard disk
     when the number of files in one directory is limited by the OS.
 
-    Thanks to the hash and partitioning, files are evenly stored across directories.
+    Thanks to the hash and partitioning,
+    files are evenly stored across directories.
     """
 
     __slots__ = ('buffer_size', 'step', 'max_split')
@@ -60,7 +63,8 @@ class HashedFilenameStrategy:
         """
         Arguments:
             buffer_size (int):
-                The buffer size is the number of bytes held in memory during the hash process.
+                The buffer size is the number of bytes
+                held in memory during the hash process.
                 Default to 16Kb.
             step (int): cutting step. Default to ``2``.
             max_split (int): Maximum number of splits to do. Default to ``3``.
@@ -209,7 +213,8 @@ class FileSystemStorage(AbstractStorage):
 
         if not os.access(root_dir, os.R_OK | os.W_OK):
             raise PermissionDenied(
-                f'Not enough permissions to read or write to the directory {root_dir!r}.'
+                'Not enough permissions to read or write '
+                f'to the directory {root_dir!r}.'
             )
 
         return root_dir
@@ -238,7 +243,8 @@ class FileSystemStorage(AbstractStorage):
         this method is called to resolve the conflict.
         It should return a new path for the file.
 
-        Runs in log(n) time where n is the number of existing files in sequence.
+        Runs in log(n) time
+        where n is the number of existing files in sequence.
         Author of this solution `James`_.
 
         .. _`James`: https://stackoverflow.com/a/47087513/10509709

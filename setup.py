@@ -20,6 +20,7 @@ setup(
         'dev': [
             'pytest>=7.1',
             'pytest-mock>=3.7',
+            'flake8>=4',
             'boto3-stubs-lite[s3]',
             'mypy>=0.950',
             'types-pillow',

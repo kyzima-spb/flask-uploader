@@ -63,7 +63,8 @@ class Extension:
 
     # This contains non executable source files
     # those which need to be compiled or assembled to binaries to be used.
-    # They are generally safe to accept, as without an existing RCE vulnerability,
+    # They are generally safe to accept,
+    # as without an existing RCE vulnerability,
     # they cannot be compiled, assembled, linked, or executed.
     SOURCE = frozenset(f.extension for f in formats.SOURCE)
 
@@ -86,7 +87,10 @@ class Extension:
         self.message = message
 
     def __call__(self, storage: FileStorage) -> None:
-        ext = '' if storage.filename is None else get_extension(storage.filename)
+        if storage.filename is None:
+            ext = ''
+        else:
+            ext = get_extension(storage.filename)
 
         if not ext:
             message = self.message or 'The file has no extension.'
@@ -136,12 +140,14 @@ class FileSize:
         Arguments:
             max_size (float|str):
                 The maximum file size.
-                Can be an integer number of bytes, or a string with a size suffix:
+                Can be an integer number of bytes,
+                or a string with a size suffix:
                 b, k, m, g, t, p.
                 For example: 512m or 512Mb
             min_size (float|str):
                 The minimum file size.
-                Can be an integer number of bytes, or a string with a size suffix:
+                Can be an integer number of bytes,
+                or a string with a size suffix:
                 b, k, m, g, t, p.
                 For example: 512m or 512Mb
             message (str):
@@ -154,10 +160,15 @@ class FileSize:
             max_size = self.to_bytes(max_size)
 
         if min_size > max_size:
-            raise ValueError('The minimum size must be less than the maximum size.')
+            raise ValueError(
+                'The minimum size must be less than the maximum size.'
+            )
 
         if not message:
-            message = 'The size of the uploaded file must be between %(min_size)s and %(max_size)s.'
+            message = (
+                'The size of the uploaded file '
+                'must be between %(min_size)s and %(max_size)s.'
+            )
 
         self.min_size = min_size
         self.max_size = max_size
@@ -179,7 +190,9 @@ class FileSize:
         }
 
     def to_bytes(self, size: str) -> float:
-        """Returns the maximum file size in bytes from a human readable string."""
+        """
+        Returns the maximum file size in bytes from a human readable string.
+        """
         match = re.search(r'^(\d+(?:\.\d+)?)([kmgtp]?)b?$', size, re.I)
 
         if match is None:
@@ -226,14 +239,22 @@ class ImageSize:
         max_height: int = -1,
         message: t.Optional[str] = None,
     ) -> None:
-        if min_width < 0 and max_width < 0 and min_height < 0 and max_height < 0:
+        if (
+            min_width < 0 and max_width < 0
+            and
+            min_height < 0 and max_height < 0
+        ):
             raise ValueError('At least one of the size options must be given.')
 
         if min_width >= 0 and 0 <= max_width < min_width:
-            raise ValueError('The minimum width must be less than the maximum.')
+            raise ValueError(
+                'The minimum width must be less than the maximum.'
+            )
 
         if min_height >= 0 and 0 <= max_height < min_height:
-            raise ValueError('The minimum height must be less than the maximum.')
+            raise ValueError(
+                'The minimum height must be less than the maximum.'
+            )
 
         self.min_width = min_width
         self.min_height = min_height

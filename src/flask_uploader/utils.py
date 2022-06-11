@@ -62,7 +62,8 @@ def md5stream(stream: t.BinaryIO, buffer_size: int = 16384) -> str:
         stream (bytes):
             Binary data stream.
         buffer_size (int):
-            The buffer size is the number of bytes held in memory during the hash process.
+            The buffer size is the number of bytes
+            held in memory during the hash process.
             Default to 16Kb.
     """
     hash_md5 = hashlib.md5()

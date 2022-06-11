@@ -126,7 +126,9 @@ class AWS:
         service_name: str,
         **user_config: t.Any,
     ) -> ServiceResource:
-        resources: dict[str, ServiceResource] = g.setdefault('boto3_resources', {})
+        resources: dict[str, ServiceResource] = g.setdefault(
+            'boto3_resources', {}
+        )
 
         if service_name not in resources:
             resources[service_name] = self.session.resource(
@@ -154,7 +156,10 @@ class AWS:
     ) -> dict[str, t.Any]:
         """Returns the configuration parameters for creating the service."""
 
-        def get_param(param_name: str, default: t.Optional[t.Any] = None) -> t.Any:
+        def get_param(
+            param_name: str,
+            default: t.Optional[t.Any] = None
+        ) -> t.Any:
             """
             Returns the value of the configuration parameter
             with the given name for the given service.
@@ -176,7 +181,9 @@ class AWS:
             'api_version': get_param('api_version', config['AWS_API_VERSION']),
             'use_ssl': get_param('use_ssl', config['AWS_USE_SSL']),
             'verify': get_param('verify', config['AWS_VERIFY']),
-            'endpoint_url': get_param('endpoint_url', config['AWS_ENDPOINT_URL']),
+            'endpoint_url': get_param(
+                'endpoint_url', config['AWS_ENDPOINT_URL']
+            ),
             **user_config,
         }
 
@@ -192,7 +199,8 @@ class AWS:
             service_name (str):
                 The name of a service, e.g. 's3' or 'ec2'.
             **user_config (dict):
-                Keyword arguments for the method :py:meth:`~boto3.session.Session.client`.
+                Keyword arguments for the method
+                :py:meth:`~boto3.session.Session.client`.
 
         Returns:
             botocore.client.BaseClient: Service client instance.
@@ -213,7 +221,8 @@ class AWS:
             service_name (str):
                 The name of a service, e.g. 's3' or 'ec2'.
             **user_config (dict):
-                Keyword arguments for the method :py:meth:`~boto3.session.Session.resource`.
+                Keyword arguments for the method
+                :py:meth:`~boto3.session.Session.resource`.
 
         Returns:
             boto3.resources.base.ServiceResource: Service resource instance.
@@ -344,21 +353,29 @@ class S3Storage(AbstractStorage):
         return increment_path(key, (obj.key for obj in objects))
 
     def get_bucket(self) -> 'Bucket':
-        """Returns a resource for working with a bucket in S3 object storage."""
+        """
+        Returns a resource for working with a bucket in S3 object storage.
+        """
         return self.get_resource().Bucket(self._bucket_name)
 
     def get_client(self) -> 'S3Client':
-        """Returns a low level client instance for working with S3 object storage."""
+        """
+        Returns a low level client instance for working with S3 object storage.
+        """
         return self.get_resource().meta.client
 
     def get_resource(self) -> 'S3ServiceResource':
-        """Returns a resource instance for working with S3 object storage."""
+        """
+        Returns a resource instance for working with S3 object storage.
+        """
         if isinstance(self._s3, LocalProxy):
             return self._s3._get_current_object()
         return self._s3
 
     def get_url(self, lookup: str) -> str:
-        """Returns the URL address of an object in S3 object storage."""
+        """
+        Returns the URL address of an object in S3 object storage.
+        """
         key = self._make_key(lookup)
         if self.is_public:
             return self.get_url_pattern().format(
@@ -367,7 +384,9 @@ class S3Storage(AbstractStorage):
         return self._generate_presigned_url(key, self.url_expires_in)
 
     def get_url_pattern(self) -> str:
-        """Returns the public URL pattern computed programmatically."""
+        """
+        Returns the public URL pattern computed programmatically.
+        """
         if not self._url_pattern:
             nbsp = '\xa0'
             url = self._generate_presigned_url(nbsp, 0)
@@ -425,11 +444,12 @@ def iter_files(storage: S3Storage) -> t.Iterable[File]:
 
     This function cannot be used in a production environment!
     """
+    q = storage.get_bucket().objects
 
     if storage.key_prefix is None:
-        objects = storage.get_bucket().objects.all()
+        objects = q.all()
     else:
-        objects = storage.get_bucket().objects.filter(Prefix=storage.key_prefix)
+        objects = q.filter(Prefix=storage.key_prefix)
 
     for obj in objects:
         yield File(

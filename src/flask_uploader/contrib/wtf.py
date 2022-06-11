@@ -105,11 +105,13 @@ class UploadField(FileField):  # type: ignore
 
     def populate_obj(self, obj: t.Any, name: str) -> None:
         """
-        Saves the uploaded file and populates `obj.<name>` with the search ID or URL.
+        Saves the uploaded file and populates `obj.<name>`
+        with the search ID or URL.
 
         Raises:
             flask_uploader.exceptions.UploadNotAllowed:
-                Any error related to the inability to save the file, but not a validation error.
+                Any error related to the inability to save the file,
+                but not a validation error.
 
         Note:
             This is a destructive operation. If `obj.<name>` already exists,
@@ -122,7 +124,7 @@ class UploadField(FileField):  # type: ignore
         """Runs validators from the uploader."""
         if not validation_stopped and file_is_selected(self):
             try:
-                self.uploader.validate(self.data)  #type: ignore
+                self.uploader.validate(self.data)  # type: ignore
             except exceptions.ValidationError as err:
                 raise ValidationError(str(err)) from err
 

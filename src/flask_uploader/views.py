@@ -43,7 +43,8 @@ class UploaderMixin:
 
         raise AttributeError(
             'You must assign the value of the attribute `uploader_or_name`, '
-            f'or override the `{self.__class__.__name__}.get_uploader()` method.'
+            f'or override the `{self.__class__.__name__}.get_uploader()` '
+            'method.'
         )
 
 
@@ -74,7 +75,11 @@ class DestroyView(BaseView):
             server = urlparse(request.host_url)
 
             if url.scheme == server.scheme and url.netloc == server.netloc:
-                redirect_url = url._replace(scheme='')._replace(netloc='').geturl()
+                redirect_url = (
+                    url._replace(scheme='')
+                       ._replace(netloc='')
+                       .geturl()
+                )
 
         return redirect_url
 
@@ -93,7 +98,8 @@ class DownloadView(BaseView):
       the :py:meth:`~flask_uploader.views.UploaderMixin.get_uploader` method.
       Used to override the default view.
     * ``/<name>/<path:lookup>`` - uses the uploader returned by
-      the static method :py:meth:`~flask_uploader.core.UploaderMeta.get_instance`.
+      the static method
+      :py:meth:`~flask_uploader.core.UploaderMeta.get_instance`.
       Used as the default view.
     """
 
@@ -106,7 +112,11 @@ class DownloadView(BaseView):
             as_attachment=True,
         ))
 
-    def get(self, lookup: str, name: t.Optional[str] = None) -> ResponseReturnValue:
+    def get(
+        self,
+        lookup: str,
+        name: t.Optional[str] = None,
+    ) -> ResponseReturnValue:
         if name is None:
             uploader = self.get_uploader()
         else:

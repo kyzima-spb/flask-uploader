@@ -31,7 +31,10 @@ class Bucket(GridFSBucket):
         session: t.Optional[ClientSession] = None  # type: ignore
     ) -> None:
         """Removes all versions of a file with the given name."""
-        cursor = self.find({'filename': filename}).sort('uploadDate', ASCENDING)
+        cursor = (
+            self.find({'filename': filename})
+                .sort('uploadDate', ASCENDING)
+        )
         for grid_out in cursor:
             self.delete(grid_out._id, session=session)
 
@@ -41,7 +44,8 @@ class Bucket(GridFSBucket):
         session: t.Optional[ClientSession] = None  # type: ignore
     ) -> t.Optional[GridOut]:
         """
-        Returns the last uploaded version of the file with the given name or None.
+        Returns the last uploaded version
+        of the file with the given name or None.
         """
         try:
             return self.open_download_stream_by_name(
@@ -52,7 +56,8 @@ class Bucket(GridFSBucket):
 
     def get_last_index(self, file_pattern: str) -> int:
         """
-        Returns the last index found for the given filename pattern, otherwise 0.
+        Returns the last index found
+        for the given filename pattern, otherwise 0.
         """
         file_pattern = re.escape(file_pattern).replace('%d', r'(\d+)')
 
@@ -152,7 +157,9 @@ class GridFSStorage(AbstractStorage):
         bucket = self.get_bucket()
         filename = self.generate_filename(storage)
         metadata: t.Dict[str, t.Any] = {
-            'contentType': guess_type(filename, use_external=True) or storage.mimetype,
+            'contentType': (
+                guess_type(filename, use_external=True) or storage.mimetype,
+            )
         }
         found = bucket.find_last_version(filename)
 
