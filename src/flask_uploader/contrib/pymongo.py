@@ -1,24 +1,24 @@
+from __future__ import annotations
 import os
 import re
 import typing as t
 
 from bson.errors import InvalidId
 from bson.objectid import ObjectId
-from flask_pymongo import PyMongo
 from gridfs import GridFSBucket
-from gridfs.grid_file import GridOut
 from gridfs.errors import NoFile
 from pymongo import ASCENDING, DESCENDING
-from pymongo.client_session import ClientSession
-from werkzeug.datastructures import FileStorage
 
 from ..exceptions import FileNotFound, InvalidLookup
 from ..formats import guess_type
-from ..storages import (
-    AbstractStorage,
-    File,
-    TFilenameStrategy,
-)
+from ..storages import AbstractStorage, File
+
+if t.TYPE_CHECKING:
+    from flask_pymongo import PyMongo
+    from gridfs.grid_file import GridOut
+    from pymongo.client_session import ClientSession
+    from werkzeug.datastructures import FileStorage
+    from ..storages import TFilenameStrategy
 
 
 __all__ = ('GridFSStorage', 'Lookup')
@@ -28,7 +28,7 @@ class Bucket(GridFSBucket):
     def delete_file(
         self,
         filename: str,
-        session: t.Optional[ClientSession] = None  # type: ignore
+        session: t.Optional[ClientSession] = None,
     ) -> None:
         """Removes all versions of a file with the given name."""
         cursor = (
@@ -41,7 +41,7 @@ class Bucket(GridFSBucket):
     def find_last_version(
         self,
         filename: str,
-        session: t.Optional[ClientSession] = None  # type: ignore
+        session: t.Optional[ClientSession] = None,
     ) -> t.Optional[GridOut]:
         """
         Returns the last uploaded version
@@ -108,7 +108,7 @@ class GridFSStorage(AbstractStorage):
         self,
         mongo: PyMongo,
         collection: str,
-        filename_strategy: t.Optional[TFilenameStrategy] = None
+        filename_strategy: t.Optional[TFilenameStrategy] = None,
     ) -> None:
         """
         Arguments

@@ -73,7 +73,7 @@ class Extension:
 
     def __init__(
         self,
-        extensions: t.Union[set[str], frozenset[str]],
+        extensions: t.Union[t.Set[str], frozenset[str]],
         message: t.Optional[str] = None,
     ) -> None:
         """

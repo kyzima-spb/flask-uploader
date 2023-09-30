@@ -11,33 +11,27 @@ from boto3.session import Session
 from boto3.resources.base import ServiceResource
 from botocore.client import BaseClient
 from botocore.exceptions import ClientError
-from botocore.session import Session as CoreSession
-from flask import (
-    current_app,
-    Flask,
-    g,
-)
+from flask import current_app, g
 from werkzeug.datastructures import FileStorage
 from werkzeug.local import LocalProxy
-
-if t.TYPE_CHECKING:
-    from mypy_boto3_s3.client import S3Client
-    from mypy_boto3_s3.service_resource import (
-        Bucket,
-        S3ServiceResource,
-    )
 
 from ..exceptions import (
     FileNotFound,
     PermissionDenied,
 )
 from ..formats import guess_type
-from ..storages import (
-    AbstractStorage,
-    File,
-    TFilenameStrategy,
-)
+from ..storages import AbstractStorage, File
 from ..utils import increment_path
+
+if t.TYPE_CHECKING:
+    from botocore.session import Session as CoreSession
+    from flask import Flask
+    from mypy_boto3_s3.client import S3Client
+    from mypy_boto3_s3.service_resource import (
+        Bucket,
+        S3ServiceResource,
+    )
+    from ..storages import TFilenameStrategy
 
 
 __all__ = ('AWS', 'S3Storage')
@@ -47,7 +41,7 @@ _F = t.TypeVar('_F', bound=t.Callable[..., t.Any])
 
 
 def catch_client_error(
-    exc_type: t.Type[BaseException] = PermissionDenied
+    exc_type: t.Type[BaseException] = PermissionDenied,
 ) -> t.Callable[[_F], _F]:
     """
     The decorator catches all client exceptions and rethrows a new exception
@@ -111,7 +105,7 @@ class AWS:
         service_name: str,
         **user_config: t.Any,
     ) -> BaseClient:
-        clients: dict[str, BaseClient] = g.setdefault('boto3_clients', {})
+        clients: t.Dict[str, BaseClient] = g.setdefault('boto3_clients', {})
 
         if service_name not in clients:
             clients[service_name] = self.session.client(
@@ -126,7 +120,7 @@ class AWS:
         service_name: str,
         **user_config: t.Any,
     ) -> ServiceResource:
-        resources: dict[str, ServiceResource] = g.setdefault(
+        resources: t.Dict[str, ServiceResource] = g.setdefault(
             'boto3_resources', {}
         )
 
@@ -152,8 +146,8 @@ class AWS:
     def _make_service_config(
         self,
         service_name: str,
-        user_config: dict[str, t.Any],
-    ) -> dict[str, t.Any]:
+        user_config: t.Dict[str, t.Any],
+    ) -> t.Dict[str, t.Any]:
         """Returns the configuration parameters for creating the service."""
 
         def get_param(
@@ -264,12 +258,12 @@ class S3Storage(AbstractStorage):
 
     def __init__(
         self,
-        s3: 'S3ServiceResource',
+        s3: S3ServiceResource,
         bucket_name: str,
         key_prefix: t.Optional[str] = None,
         is_public: bool = True,
         url_expires_in: int = 3600,
-        filename_strategy: t.Optional[TFilenameStrategy] = None
+        filename_strategy: t.Optional[TFilenameStrategy] = None,
     ) -> None:
         """
         Arguments:
@@ -352,19 +346,19 @@ class S3Storage(AbstractStorage):
         objects = self.get_bucket().objects.filter(Prefix=prefix)
         return increment_path(key, (obj.key for obj in objects))
 
-    def get_bucket(self) -> 'Bucket':
+    def get_bucket(self) -> Bucket:
         """
         Returns a resource for working with a bucket in S3 object storage.
         """
         return self.get_resource().Bucket(self._bucket_name)
 
-    def get_client(self) -> 'S3Client':
+    def get_client(self) -> S3Client:
         """
         Returns a low level client instance for working with S3 object storage.
         """
         return self.get_resource().meta.client
 
-    def get_resource(self) -> 'S3ServiceResource':
+    def get_resource(self) -> S3ServiceResource:
         """
         Returns a resource instance for working with S3 object storage.
         """

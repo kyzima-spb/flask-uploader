@@ -80,7 +80,7 @@ def split_pairs(
     hash_sum: str,
     step: int = 2,
     max_split: int = 3,
-) -> list[str]:
+) -> t.Sequence[str]:
     """
     Splits the hash sum string into parts of the specified length.
 

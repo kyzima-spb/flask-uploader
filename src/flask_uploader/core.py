@@ -6,10 +6,11 @@ from flask import (
     current_app,
     url_for,
 )
-from werkzeug.datastructures import FileStorage
 
-from .storages import AbstractStorage, File
-from .validators import TValidator
+if t.TYPE_CHECKING:
+    from werkzeug.datastructures import FileStorage
+    from .storages import AbstractStorage, File
+    from .validators import TValidator
 
 
 __all__ = (
@@ -31,8 +32,8 @@ class UploaderMeta(type):
     def __init__(
         cls,
         name: str,
-        bases: tuple[type, ...],
-        d: dict[str, t.Any]
+        bases: t.Tuple[type, ...],
+        d: t.Dict[str, t.Any],
     ) -> None:
         super().__init__(name, bases, d)
 
@@ -89,7 +90,7 @@ class Uploader(metaclass=UploaderMeta):
         storage: AbstractStorage,
         validators: t.Optional[t.Sequence[TValidator]] = None,
         endpoint: t.Optional[str] = None,
-        use_auto_route: bool = True
+        use_auto_route: bool = True,
     ) -> None:
         """
         Arguments:

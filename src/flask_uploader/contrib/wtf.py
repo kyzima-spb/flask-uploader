@@ -7,13 +7,15 @@ from wtforms.form import Form
 from wtforms.validators import (
     DataRequired,
     StopValidation,
-    ValidationError,
+    ValidationError as WTFValidationError,
 )
 from werkzeug.datastructures import FileStorage
 
-from .. import exceptions
-from .. import validators
-from ..core import Uploader
+from .. import validators as vd
+from ..exceptions import ValidationError
+
+if t.TYPE_CHECKING:
+    from ..core import Uploader
 
 
 __all__ = (
@@ -49,7 +51,7 @@ def wrap_validator(cls: _F) -> _F:
             if file_is_selected(field):
                 try:
                     validator(field.data)
-                except exceptions.ValidationError as err:
+                except ValidationError as err:
                     raise StopValidation(str(err)) from err
 
         return _validate
@@ -57,13 +59,13 @@ def wrap_validator(cls: _F) -> _F:
     return t.cast(_F, wrapper)
 
 
-Extension = extension = wrap_validator(validators.Extension)
+Extension = extension = wrap_validator(vd.Extension)
 FileRequired = file_required = DataRequired
-FileSize = file_size = wrap_validator(validators.FileSize)
-ImageSize = image_size = wrap_validator(validators.ImageSize)
+FileSize = file_size = wrap_validator(vd.FileSize)
+ImageSize = image_size = wrap_validator(vd.ImageSize)
 
 
-class UploadField(FileField):  # type: ignore
+class UploadField(FileField):
     """
     A form field for uploading a file and saving it using the uploader.
     """
@@ -71,7 +73,7 @@ class UploadField(FileField):  # type: ignore
     def __init__(
         self,
         label: t.Optional[str] = None,
-        validators: t.Optional[t.List[_WTFValidator]] = None,
+        validators: t.Optional[t.Sequence[_WTFValidator]] = None,
         *,
         uploader: Uploader,
         overwrite: bool = False,
@@ -125,8 +127,8 @@ class UploadField(FileField):  # type: ignore
         if not validation_stopped and file_is_selected(self):
             try:
                 self.uploader.validate(self.data)  # type: ignore
-            except exceptions.ValidationError as err:
-                raise ValidationError(str(err)) from err
+            except ValidationError as err:
+                raise WTFValidationError(str(err)) from err
 
     def save(self) -> None:
         """Saves the uploaded file."""

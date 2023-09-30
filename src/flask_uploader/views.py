@@ -10,11 +10,13 @@ from flask import (
     send_file,
 )
 from flask.views import MethodView
-from flask.typing import ResponseReturnValue
 
 from .core import Uploader
 from .exceptions import FileNotFound
 from .storages import File
+
+if t.TYPE_CHECKING:
+    from flask.typing import ResponseReturnValue
 
 
 __all__ = (
@@ -55,7 +57,7 @@ class BaseView(UploaderMixin, MethodView):
 
     def __init__(
         self,
-        uploader_or_name: t.Optional[t.Union[str, Uploader]] = None
+        uploader_or_name: t.Optional[t.Union[str, Uploader]] = None,
     ) -> None:
         if uploader_or_name is not None:
             self.uploader_or_name = uploader_or_name

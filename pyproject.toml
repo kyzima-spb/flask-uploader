@@ -12,6 +12,7 @@ dependencies = [
     "flask>=2",
     "Flask-WTF>=1.0",
     "Pillow>=9.1.1",
+    'importlib-metadata; python_version<"3.8"',
     'typing_extensions; python_version<"3.9"',
 ]
 keywords = [
@@ -78,6 +79,8 @@ disallow_subclassing_any = false
 module = [
     "flask_pymongo.*",
     "flask_wtf.*",
+    "importlib.*",
+    "importlib_metadata.*",
     "wtforms.*",
 ]
 ignore_missing_imports = true

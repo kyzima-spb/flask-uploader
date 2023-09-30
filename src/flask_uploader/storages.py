@@ -58,7 +58,7 @@ class HashedFilenameStrategy:
         self,
         buffer_size: int = 16384,
         step: int = 2,
-        max_split: int = 3
+        max_split: int = 3,
     ) -> None:
         """
         Arguments:
@@ -96,7 +96,7 @@ class TimestampStrategy:
     def __init__(
         self,
         fmt: str = '%Y-%m-%d-%H-%M-%S',
-        as_int: bool = False
+        as_int: bool = False,
     ) -> None:
         """
         Arguments:
@@ -120,7 +120,7 @@ class AbstractStorage(metaclass=ABCMeta):
 
     def __init__(
         self,
-        filename_strategy: t.Optional[TFilenameStrategy] = None
+        filename_strategy: t.Optional[TFilenameStrategy] = None,
     ) -> None:
         """
         Arguments:
@@ -180,7 +180,7 @@ class FileSystemStorage(AbstractStorage):
     def __init__(
         self,
         dest: str,
-        filename_strategy: t.Optional[TFilenameStrategy] = None
+        filename_strategy: t.Optional[TFilenameStrategy] = None,
     ) -> None:
         super().__init__(filename_strategy)
         self.dest = os.path.expandvars(dest)

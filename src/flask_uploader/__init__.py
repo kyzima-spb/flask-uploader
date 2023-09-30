@@ -5,10 +5,13 @@ except ImportError:
     from importlib_metadata import version
 import typing as t
 
-from flask import Blueprint, Flask
+from flask import Blueprint
 
 from .core import Uploader
 from .views import DownloadView
+
+if t.TYPE_CHECKING:
+    from flask import Flask
 
 
 __all__ = (

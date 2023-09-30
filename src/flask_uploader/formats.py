@@ -184,7 +184,7 @@ DLL = FileFormat('dll', 'application/x-msdownload')
 EXECUTABLES = frozenset((SO, EXE, DLL))
 
 
-format_map: dict[str, FileFormat] = {
+format_map: t.Dict[str, FileFormat] = {
     value.extension: value
     for name, value in globals().items()
     if isinstance(value, FileFormat)
