@@ -1,7 +1,7 @@
 [project]
 name = "Flask-Uploader"
 description = "File uploader for Flask with flexible extensibility."
-readme = "README.rst"
+readme = {file = ["README.rst", "CHANGES.rst", "LICENSE"]}
 license = {file = "LICENSE"}
 authors = [
     {name = "Kirill Vercetti", email = "office@kyzima-spb.com"},

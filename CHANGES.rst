@@ -8,7 +8,7 @@ Released 2023-10-01
 -   Minimum Flask-WTF version lowered to 0.13
 -   Python 3.7 compatibility issues fixed
 -   Fixed type annotations
--   `setup.py` and `setup.cfg` have been replaced with `pyproject.toml`.
+-   ``setup.py`` and ``setup.cfg`` have been replaced with ``pyproject.toml``.
 
 Version 0.2.0
 -------------

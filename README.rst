@@ -3,23 +3,14 @@ Flask-Uploader
 
 |PyPI| |LICENCE| |STARS| |DOCS|
 
+|DOWNLOADS| |DOWNLOADS_M| |DOWNLOADS_W|
+
 **Flask-Uploader** - file uploader for Flask with flexible extensibility.
 
 How to use can be found in the documentation_.
 Documentation is in Russian only, use a translator for other languages.
 
 See the usage example_ for more understanding.
-
-Development
------------
-
-Run mypy::
-
-    docker-compose exec -w /package -u 1000:1000 sphinx mypy
-
-Run pytest::
-
-    docker-compose exec -w /package -u 1000:1000 sphinx pytest
 
 .. |PyPI| image:: https://img.shields.io/pypi/v/flask-uploader.svg
    :target: https://pypi.org/project/flask-uploader/
@@ -36,6 +27,15 @@ Run pytest::
 .. |DOCS| image:: https://readthedocs.org/projects/flask-uploader/badge/?version=latest
    :target: https://flask-uploader.readthedocs.io/ru/latest/?badge=latest
    :alt: Documentation Status
+
+.. |DOWNLOADS| image:: https://pepy.tech/badge/flask-uploader
+   :target: https://pepy.tech/project/flask-uploader
+
+.. |DOWNLOADS_M| image:: https://pepy.tech/badge/flask-uploader/month
+   :target: https://pepy.tech/project/flask-uploader
+
+.. |DOWNLOADS_W| image:: https://pepy.tech/badge/flask-uploader/week
+   :target: https://pepy.tech/project/flask-uploader
 
 .. _documentation: https://flask-uploader.readthedocs.io/ru/latest/
 .. _example: https://github.com/kyzima-spb/flask-uploader/tree/master/example/uploader
