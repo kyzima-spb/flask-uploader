@@ -1,12 +1,11 @@
 [project]
 name = "Flask-Uploader"
 description = "File uploader for Flask with flexible extensibility."
-readme = {file = ["README.rst", "CHANGES.rst", "LICENSE"]}
 license = {file = "LICENSE"}
 authors = [
     {name = "Kirill Vercetti", email = "office@kyzima-spb.com"},
 ]
-dynamic = ["version"]
+dynamic = ["version", "readme"]
 requires-python = ">=3.7"
 dependencies = [
     "flask>=0.11",
@@ -32,12 +31,14 @@ classifiers = [
     "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
 ]
 
+[tool.setuptools.dynamic]
+readme = {file = ["README.rst", "CHANGES.rst", "LICENSE"]}
 
 [project.urls]
 Homepage = "https://github.com/kyzima-spb/flask-uploader"
 Repository = "https://github.com/kyzima-spb/flask-uploader.git"
 "Issue Tracker" = "https://github.com/kyzima-spb/flask-uploader/issues"
-
+"Change log" = "https://github.com/kyzima-spb/flask-uploader#flask-uploader"
 
 [project.optional-dependencies]
 aws = [
