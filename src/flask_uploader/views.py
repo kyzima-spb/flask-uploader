@@ -1,4 +1,5 @@
 from __future__ import annotations
+import inspect
 import typing as t
 from urllib.parse import urlparse
 
@@ -7,7 +8,7 @@ from flask import (
     current_app,
     redirect,
     request,
-    send_file,
+    send_file as _send_file,
 )
 from flask.views import MethodView
 
@@ -107,12 +108,20 @@ class DownloadView(BaseView):
 
     def send_file(self, f: File) -> ResponseReturnValue:
         """Send the contents of a given file to the client."""
-        return t.cast(ResponseReturnValue, send_file(
-            path_or_file=f.path_or_file,
-            attachment_filename=f.filename,
+        kwargs = {}
+        sig = inspect.signature(_send_file)
+
+        if 'download_name' in sig.parameters:
+            kwargs['download_name'] = f.filename
+        else:
+            kwargs['attachment_filename'] = f.filename
+
+        return _send_file(
+            f.path_or_file,
             mimetype=f.mimetype,
             as_attachment=True,
-        ))
+            **kwargs,  # type: ignore
+        )
 
     def get(
         self,

@@ -12,13 +12,12 @@ if t.TYPE_CHECKING:
     from .storages import AbstractStorage, File
     from .validators import TValidator
 
+    Cache = weakref.WeakValueDictionary[str, 'Uploader']
+
 
 __all__ = (
     'Uploader',
 )
-
-
-Cache = weakref.WeakValueDictionary[str, 'Uploader']
 
 
 class UploaderMeta(type):
