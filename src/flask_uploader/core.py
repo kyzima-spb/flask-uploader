@@ -39,7 +39,7 @@ class UploaderMeta(type):
         if not hasattr(cls, '_cache'):
             cls._cache: Cache = weakref.WeakValueDictionary()
 
-    def __call__(  # type: ignore
+    def __call__(
         cls,
         name: str,
         storage: AbstractStorage,

@@ -1,12 +1,18 @@
 version: "3.7"
 
 services:
+  package:
+    build: .
+    user: 1000:1000
+    volumes:
+      - .:/flask-uploader
+
   sphinx:
     image: kyzimaspb/sphinx
     environment:
-      EXTRA: dev
+      EXTRA: aws pymongo dev
     restart: unless-stopped
     ports:
-      - 8000:8000
+      - "8000:8000"
     volumes:
       - .:/package

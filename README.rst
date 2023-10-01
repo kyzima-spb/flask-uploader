@@ -12,6 +12,17 @@ Documentation is in Russian only, use a translator for other languages.
 
 See the usage example_ for more understanding.
 
+Development
+-----------
+
+.. code-block:: shell
+
+    # Run mypy
+    $ docker compose run --rm package mypy
+
+    # Run pytest
+    $ docker compose run --rm package pytest
+
 .. |PyPI| image:: https://img.shields.io/pypi/v/flask-uploader.svg
    :target: https://pypi.org/project/flask-uploader/
    :alt: Latest Version
