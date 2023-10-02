@@ -1,16 +1,22 @@
-FROM kyzimaspb/flask:3.10-slim-bullseye
+FROM kyzimaspb/flask:3.11-slim-bookworm
 
 LABEL maintainer="Kirill Vercetti <office@kyzima-spb.com>"
 
-COPY ./requirements.txt /app/requirements.txt
+ARG DOWNLOAD_URL="https://github.com/kyzima-spb/flask-uploader/archive/refs/heads/dev-master.zip"
 
-RUN pydep.sh
-
-RUN pip install -q \
+RUN set -ex \
+    && pip install \
         --no-cache-dir \
         --disable-pip-version-check \
-        --extra-index-url=https://test.pypi.org/simple \
-        --extra-index-url=https://pypi.python.org/simple \
-        flask-uploader[dev]
+            "flask-uploader[aws] @ ${DOWNLOAD_URL}" \
+            "flask-uploader[pymongo] @ ${DOWNLOAD_URL}"
 
-ADD ./ /app
+COPY ./requirements.txt ./
+
+RUN set -ex \
+    && pip install \
+        --no-cache-dir \
+        --disable-pip-version-check \
+        -r requirements.txt
+
+COPY . ./

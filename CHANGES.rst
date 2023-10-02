@@ -4,7 +4,7 @@ Changes
 Version 0.3.0
 -------------
 
-Released 2023-10-01
+Released 2023-10-02
 
 -   Minimum Flask version lowered to 0.11
 -   Minimum Pillow version lowered to 8.0
