@@ -16,6 +16,7 @@ from ..exceptions import ValidationError
 
 if t.TYPE_CHECKING:
     from ..core import Uploader
+    from ..typing import WTFValidatorCallable
 
 
 __all__ = (
@@ -32,7 +33,6 @@ __all__ = (
 
 
 _F = t.TypeVar('_F', bound=t.Callable[..., t.Any])
-_WTFValidator = t.Callable[[Form, FileField], None]
 
 
 def file_is_selected(field: FileField) -> bool:
@@ -73,7 +73,7 @@ class UploadField(FileField):
     def __init__(
         self,
         label: t.Optional[str] = None,
-        validators: t.Optional[t.Sequence[_WTFValidator]] = None,
+        validators: t.Optional[t.Sequence[WTFValidatorCallable]] = None,
         *,
         uploader: Uploader,
         overwrite: bool = False,
@@ -143,3 +143,5 @@ class UploadField(FileField):
                 self.data = self.uploader.get_url(lookup, external=self.external)
 
             return lookup
+
+        return None

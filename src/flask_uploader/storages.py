@@ -16,18 +16,17 @@ from .exceptions import (
 from .formats import guess_type
 from .utils import get_extension, md5stream, split_pairs
 
+if t.TYPE_CHECKING:
+    from .typing import FilenameStrategyCallable
+
 
 __all__ = (
     'AbstractStorage',
     'File',
     'FileSystemStorage',
     'HashedFilenameStrategy',
-    'TFilenameStrategy',
     'TimestampStrategy',
 )
-
-
-TFilenameStrategy = t.Callable[[FileStorage], str]
 
 
 class File(t.NamedTuple):
@@ -120,11 +119,11 @@ class AbstractStorage(metaclass=ABCMeta):
 
     def __init__(
         self,
-        filename_strategy: t.Optional[TFilenameStrategy] = None,
+        filename_strategy: t.Optional[FilenameStrategyCallable] = None,
     ) -> None:
         """
         Arguments:
-            filename_strategy (TFilenameStrategy):
+            filename_strategy (FilenameStrategyCallable):
                 A callable that returns the name of the file to save.
         """
         if filename_strategy is None:
@@ -180,7 +179,7 @@ class FileSystemStorage(AbstractStorage):
     def __init__(
         self,
         dest: str,
-        filename_strategy: t.Optional[TFilenameStrategy] = None,
+        filename_strategy: t.Optional[FilenameStrategyCallable] = None,
     ) -> None:
         super().__init__(filename_strategy)
         self.dest = os.path.expandvars(dest)

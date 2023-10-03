@@ -17,10 +17,7 @@ __all__ = (
     'FileRequired',
     'FileSize',
     'ImageSize',
-    'TValidator',
 )
-
-TValidator = t.Callable[[FileStorage], None]
 
 
 class Extension:

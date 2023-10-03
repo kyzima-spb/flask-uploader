@@ -31,7 +31,7 @@ if t.TYPE_CHECKING:
         Bucket,
         S3ServiceResource,
     )
-    from ..storages import TFilenameStrategy
+    from ..typing import FilenameStrategyCallable
 
 
 __all__ = ('AWS', 'S3Storage')
@@ -263,7 +263,7 @@ class S3Storage(AbstractStorage):
         key_prefix: t.Optional[str] = None,
         is_public: bool = True,
         url_expires_in: int = 3600,
-        filename_strategy: t.Optional[TFilenameStrategy] = None,
+        filename_strategy: t.Optional[FilenameStrategyCallable] = None,
     ) -> None:
         """
         Arguments:
@@ -277,7 +277,7 @@ class S3Storage(AbstractStorage):
                 Access to the bucket and objects is allowed for all users.
             url_expires_in (int):
                 The number of seconds that signed URLs are valid.
-            filename_strategy (TFilenameStrategy):
+            filename_strategy (FilenameStrategyCallable):
                 A callable that returns the name of the file to save.
         """
         super().__init__(filename_strategy=filename_strategy)

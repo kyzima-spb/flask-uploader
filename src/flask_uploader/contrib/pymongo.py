@@ -18,7 +18,7 @@ if t.TYPE_CHECKING:
     from gridfs.grid_file import GridOut
     from pymongo.client_session import ClientSession
     from werkzeug.datastructures import FileStorage
-    from ..storages import TFilenameStrategy
+    from ..typing import FilenameStrategyCallable
 
 
 __all__ = ('GridFSStorage', 'Lookup')
@@ -108,7 +108,7 @@ class GridFSStorage(AbstractStorage):
         self,
         mongo: PyMongo,
         collection: str,
-        filename_strategy: t.Optional[TFilenameStrategy] = None,
+        filename_strategy: t.Optional[FilenameStrategyCallable] = None,
     ) -> None:
         """
         Arguments

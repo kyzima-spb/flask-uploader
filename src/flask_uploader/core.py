@@ -10,7 +10,7 @@ from flask import (
 if t.TYPE_CHECKING:
     from werkzeug.datastructures import FileStorage
     from .storages import AbstractStorage, File
-    from .validators import TValidator
+    from .typing import ValidatorCallable
 
     Cache = weakref.WeakValueDictionary[str, 'Uploader']
 
@@ -43,7 +43,7 @@ class UploaderMeta(type):
         cls,
         name: str,
         storage: AbstractStorage,
-        validators: t.Optional[t.Sequence[TValidator]] = None,
+        validators: t.Optional[t.Sequence[ValidatorCallable]] = None,
         endpoint: t.Optional[str] = None,
         use_auto_route: bool = True,
     ) -> Uploader:
@@ -87,7 +87,7 @@ class Uploader(metaclass=UploaderMeta):
         self,
         name: str,
         storage: AbstractStorage,
-        validators: t.Optional[t.Sequence[TValidator]] = None,
+        validators: t.Optional[t.Sequence[ValidatorCallable]] = None,
         endpoint: t.Optional[str] = None,
         use_auto_route: bool = True,
     ) -> None:
@@ -97,7 +97,7 @@ class Uploader(metaclass=UploaderMeta):
                 The unique name of the uploader.
             storage (AbstractStorage):
                 Storage instance for file manipulation.
-            validators (TValidator):
+            validators (ValidatorCallable):
                 List of called objects for validating the uploaded file.
             endpoint (str):
                 The name of the endpoint to generate the URL.
