@@ -130,16 +130,16 @@ class UploadField(FileField):
             except ValidationError as err:
                 raise WTFValidationError(str(err)) from err
 
-    def save(self) -> None:
-        """Saves the uploaded file."""
+    def save(self) -> t.Optional[str]:
+        """Saves the uploaded file and returns an identifier for searching."""
         if file_is_selected(self):
-            lookup = self.uploader.save(
+            self.data = lookup = self.uploader.save(
                 storage=self.data,  # type: ignore
                 overwrite=self.overwrite,
                 skip_validation=True,
             )
 
             if self.return_url:
-                lookup = self.uploader.get_url(lookup, external=self.external)
+                self.data = self.uploader.get_url(lookup, external=self.external)
 
-            self.data = lookup
+            return lookup

@@ -4,8 +4,9 @@ Changes
 Version 0.3.0
 -------------
 
-Released 2023-10-02
+Released 2023-10-03
 
+-   The ``flask_uploader.contrib.wtf.UploadField.save`` method returns the lookup.
 -   Minimum Flask version lowered to 0.11
 -   Minimum Pillow version lowered to 8.0
 -   Minimum Flask-WTF version lowered to 0.13
