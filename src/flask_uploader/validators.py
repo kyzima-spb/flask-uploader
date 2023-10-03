@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+import os
 import re
 import typing as t
 
@@ -175,7 +177,7 @@ class FileSize:
         self.message = message
 
     def __call__(self, storage: FileStorage) -> None:
-        storage.stream.seek(0, 2)
+        storage.stream.seek(0, os.SEEK_END)
         size = storage.stream.tell()
         storage.stream.seek(0)
 
