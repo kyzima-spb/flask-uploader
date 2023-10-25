@@ -22,7 +22,7 @@ pythoninfo==0.1.2
 s3transfer==0.7.0
 six==1.16.0
 urllib3==1.26.18
-Werkzeug==2.3.7
+Werkzeug==3.0.1
 WTForms==3.0.1
 zope.event==5.0
 zope.interface==6.0
