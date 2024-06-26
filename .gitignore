@@ -1,5 +1,6 @@
 docker-compose.override.yml
 secrets/
+!secrets/.gitkeep
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

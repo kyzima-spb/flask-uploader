@@ -1,6 +1,7 @@
 from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from datetime import datetime
+import pathlib
 import os
 import re
 import typing as t
@@ -191,24 +192,20 @@ class FileSystemStorage(AbstractStorage):
 
     def get_root_dir(self) -> str:
         """Returns the root directory for saving uploaded files."""
-        if os.path.isabs(self.dest):
-            root_dir = self.dest
-        else:
+        root_dir = pathlib.Path(self.dest)
+
+        if not root_dir.is_absolute():
             config = current_app.config
 
             if config['UPLOADER_INSTANCE_RELATIVE_ROOT']:
-                uploader_dir = os.path.join(
-                    current_app.instance_path, config['UPLOADER_ROOT_DIR']
-                )
+                root_dir = pathlib.Path(current_app.instance_path) / config['UPLOADER_ROOT_DIR']
             else:
-                uploader_dir = config['UPLOADER_ROOT_DIR']
+                root_dir = pathlib.Path(config['UPLOADER_ROOT_DIR'])
 
-            root_dir = os.path.join(uploader_dir, self.dest)
-
-        if not os.path.isabs(root_dir):
-            raise PermissionDenied(
-                'Relative path for uploading files is not allowed.'
-            )
+            if not root_dir.is_absolute():
+                raise PermissionDenied(
+                    'Relative path for uploading files is not allowed.'
+                )
 
         if not os.access(root_dir, os.R_OK | os.W_OK):
             raise PermissionDenied(
@@ -216,7 +213,12 @@ class FileSystemStorage(AbstractStorage):
                 f'to the directory {root_dir!r}.'
             )
 
-        return root_dir
+        root_dir /= self.dest
+
+        if not root_dir.exists():
+            root_dir.mkdir(0o755, parents=True)
+
+        return root_dir.as_posix()
 
     def load(self, lookup: str) -> File:
         path = self._make_filepath(lookup)
