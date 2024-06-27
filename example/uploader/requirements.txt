@@ -10,7 +10,7 @@ flask-useful==0.2.9
 Flask-WTF==1.2.1
 gevent==23.9.1
 greenlet==3.0.0rc3
-gunicorn==21.2.0
+gunicorn==22.0.0
 itsdangerous==2.1.2
 Jinja2==3.1.2
 jmespath==1.0.1
