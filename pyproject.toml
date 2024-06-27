@@ -72,7 +72,7 @@ testpaths = ["tests"]
 
 [tool.mypy]
 files = ["src/flask_uploader"]
-python_version = "3.7"
+python_version = "3.8"
 strict = true
 disallow_subclassing_any = false
 
