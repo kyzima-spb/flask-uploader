@@ -6,7 +6,6 @@ dnspython==2.6.1
 Flask==2.3.3
 Flask-Login==0.6.3
 Flask-PyMongo==2.3.0
-Flask-Uploader @ https://github.com/kyzima-spb/flask-uploader/archive/refs/heads/dev-master.zip#sha256=38371243068430a28d43ae357495ae2746fa1d521c162bac4109617bd9dfd1e3
 flask-useful==0.2.9
 Flask-WTF==1.2.1
 gevent==23.9.1
